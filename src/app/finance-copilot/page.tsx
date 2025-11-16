@@ -137,8 +137,8 @@ export default function FinanceCopilotPage() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
               <ErrorCard
                 message={error}
-                ctaLabel={trialExhausted ? 'Upgrade (Pricing)' : 'Try Again'}
-                onCta={trialExhausted ? () => { window.location.href = '/pricing'; } : handleReset}
+                ctaLabel={'Try Again'}
+                onCta={handleReset}
               />
             </motion.div>
           )}

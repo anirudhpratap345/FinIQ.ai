@@ -18,7 +18,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const sectionIds = ["features", "how-it-works", "testimonials", "pricing"];
+  const sectionIds = ["features", "how-it-works"];
   const active = useScrollSpy(sectionIds);
   const pathname = usePathname();
   const isHome = pathname === "/";
@@ -36,10 +36,6 @@ export default function Navbar() {
                className={`underline-soft nav-link transition-colors ${active==="features"?"text-white":"text-gray-300 hover:text-white"}`}>Features</a>
             <a href="#how-it-works" aria-current={isHome && active==="how-it-works"?"page":undefined}
                className={`underline-soft nav-link transition-colors ${active==="how-it-works"?"text-white":"text-gray-300 hover:text-white"}`}>How it works</a>
-            <a href="#testimonials" aria-current={isHome && active==="testimonials"?"page":undefined}
-               className={`underline-soft nav-link transition-colors ${active==="testimonials"?"text-white":"text-gray-300 hover:text-white"}`}>Testimonials</a>
-            <a href="#pricing" aria-current={isHome && active==="pricing"?"page":undefined}
-               className={`underline-soft nav-link transition-colors ${active==="pricing"?"text-white":"text-gray-300 hover:text-white"}`}>Pricing</a>
             <Link href="/finance-copilot" className="underline-soft nav-link text-gray-300 hover:text-white transition-colors">Get Strategy</Link>
         </nav>
 
@@ -67,8 +63,6 @@ export default function Navbar() {
             <div className="glass rounded-xl p-4 space-y-3 border border-white/10">
               <a href="#features" className="block text-gray-200" onClick={() => setOpen(false)}>Features</a>
               <Link href="/finance-copilot" className="block text-gray-200" onClick={() => setOpen(false)}>Get Strategy</Link>
-              <a href="#pricing" className="block text-gray-200" onClick={() => setOpen(false)}>Pricing</a>
-              <a href="#testimonials" className="block text-gray-200" onClick={() => setOpen(false)}>Testimonials</a>
             </div>
           </motion.div>
         )}

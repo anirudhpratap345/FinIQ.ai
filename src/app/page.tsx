@@ -4,8 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Zap, Target, Clock, FileText, Github, Database, Brain, Play, ArrowRight } from "lucide-react";
 import AnimatedBackground from "@/components/AnimatedBackground";
-import Testimonials from "@/components/Testimonials";
-import Pricing from "@/components/Pricing";
 import TrustStats from "@/components/TrustStats";
 import GlassCard from "@/components/GlassCard";
 import AnimatedButton from "@/components/AnimatedButton";
@@ -300,12 +298,6 @@ export default function Home() {
 
       {/* Trust */}
       <TrustStats />
-
-      {/* Testimonials */}
-      <Testimonials />
-
-      {/* Pricing */}
-      <Pricing />
 
       {/* Footer is included in RootLayout */}
     </div>
