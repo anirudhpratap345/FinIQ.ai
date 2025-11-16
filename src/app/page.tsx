@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Zap, Target, Clock, FileText, Github, Database, Brain, Play, ArrowRight } from "lucide-react";
 import AnimatedBackground from "@/components/AnimatedBackground";
-import TrustStats from "@/components/TrustStats";
 import GlassCard from "@/components/GlassCard";
 import AnimatedButton from "@/components/AnimatedButton";
 import HowItWorksModal from "@/components/HowItWorksModal";
@@ -34,7 +33,7 @@ export default function Home() {
               transition={{ duration: 2, repeat: Infinity }}
               className="w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full"
             />
-            <span className="text-sm text-white/90 font-medium">Our AI generates blueprints at all times</span>
+            <span className="text-sm text-white/90 font-medium">FinIQ.ai is an AI tool for funding strategy</span>
           </motion.div>
           
           <motion.h2 
@@ -43,7 +42,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.5 }}
             className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight"
           >
-            FinIQ.ai for Founders
+            FinIQ.ai funding strategy
           </motion.h2>
           
           <motion.p 
@@ -52,7 +51,7 @@ export default function Home() {
             transition={{ duration: 0.6, delay: 0.7 }}
             className="text-lg text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
           >
-            Generate a personalized funding strategy based on your startup's stage and traction. Get recommendations for funding stage, raise amount, investor types, runway, and budget allocation.
+            Generate a structured funding strategy with recommended stage, raise amount, investor types, runway, and budget allocation.
           </motion.p>
           
           {/* Action Buttons */}
@@ -101,19 +100,19 @@ export default function Home() {
                   >
                     <Brain className="h-5 w-5 text-white" />
                   </motion.div>
-                  What FinIQ.ai Delivers
+                  What FinIQ.ai does
                 </h3>
                 <p className="text-gray-400 text-sm">
-                  A focused, finance-first report tailored to your inputs:
+                  FinIQ.ai takes basic startup inputs and returns a concise funding blueprint:
                 </p>
               </div>
               <div className="space-y-6">
                 <ul className="text-gray-300 text-sm space-y-2">
-                  <li className="flex items-start gap-2"><span className="text-white">•</span> Funding stage recommendation (Bootstrapped → Series A+)</li>
-                  <li className="flex items-start gap-2"><span className="text-white">•</span> Raise amount with min-max range and reasoning</li>
-                  <li className="flex items-start gap-2"><span className="text-white">•</span> Investor type matching (Angels, Micro‑VC, Accelerators, etc.)</li>
-                  <li className="flex items-start gap-2"><span className="text-white">•</span> Runway estimate and burn rate guidance</li>
-                  <li className="flex items-start gap-2"><span className="text-white">•</span> Budget allocation across Hiring, Product, GTM, and more</li>
+                  <li className="flex items-start gap-2"><span className="text-white">•</span> Recommended funding stage (Pre‑seed to Series A+)</li>
+                  <li className="flex items-start gap-2"><span className="text-white">•</span> Suggested raise amount with a min–max range</li>
+                  <li className="flex items-start gap-2"><span className="text-white">•</span> Investor types to target (angels, funds, accelerators)</li>
+                  <li className="flex items-start gap-2"><span className="text-white">•</span> Runway estimate based on burn and target raise</li>
+                  <li className="flex items-start gap-2"><span className="text-white">•</span> High‑level budget split across team, product, and GTM</li>
                 </ul>
                 <div className="pt-4">
                   <AnimatedButton 
@@ -143,10 +142,10 @@ export default function Home() {
             className="text-center mb-16"
           >
             <h3 className="text-3xl font-bold text-white mb-4">
-              What You&apos;ll Get
+              What it generates
             </h3>
             <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-              Comprehensive financial strategy and funding guidance
+              FinIQ.ai focuses on a small set of concrete funding outputs.
             </p>
           </motion.div>
 
@@ -154,32 +153,32 @@ export default function Home() {
           {[
             {
               icon: Target,
-              title: "Funding Stage",
-              description: "AI-recommended funding stage from Pre-Seed to Series A+ based on your traction",
+              title: "Funding stage",
+              description: "Recommended funding stage from pre‑seed to Series A+ based on your inputs.",
               gradient: "from-blue-600 to-blue-800",
               glow: "blue",
               delay: 0.1
             },
             {
               icon: FileText,
-              title: "Raise Amount",
-              description: "Precise raise calculation with min-max range and allocation breakdown",
+              title: "Raise amount",
+              description: "Suggested amount to raise, with an approximate min–max range.",
               gradient: "from-slate-600 to-slate-800",
               glow: "blue",
               delay: 0.2
             },
             {
               icon: Clock,
-              title: "Runway Guidance",
-              description: "Estimated runway, burn rate advice, and financial milestone planning",
+              title: "Runway",
+              description: "Estimated runway given your burn and the recommended raise.",
               gradient: "from-indigo-600 to-indigo-800",
               glow: "purple",
               delay: 0.3
             },
             {
               icon: Github,
-              title: "Investor Matching",
-              description: "Prioritized investor types (Angels, VCs, Accelerators) tailored to your stage",
+              title: "Investor focus",
+              description: "Priority investor types (angels, micro‑VCs, funds, accelerators).",
               gradient: "from-blue-700 to-blue-900",
               glow: "pink",
               delay: 0.4
@@ -231,10 +230,10 @@ export default function Home() {
             className="text-center mb-16"
           >
             <h3 className="text-3xl font-bold text-white mb-4">
-              How It Works
+              How it works
             </h3>
             <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-              AI-powered financial analysis in three simple steps
+              FinIQ.ai uses a small set of agents to turn your inputs into a funding blueprint.
             </p>
           </motion.div>
 
@@ -242,22 +241,22 @@ export default function Home() {
             {[
               {
                 icon: Brain,
-                title: "Input Your Details",
-                description: "Share your startup info, traction, team size, and financial goals",
+                title: "1. Describe your startup",
+                description: "Enter basic information about your product, traction, team, and goals.",
                 gradient: "from-blue-600 to-blue-800",
                 delay: 0.1
               },
               {
                 icon: Database,
-                title: "AI Analysis",
-                description: "6 specialized agents analyze funding stage, raise amount, and investor fit",
+                title: "2. Multi‑agent analysis",
+                description: "FinIQ.ai runs a structured pipeline of agents over your inputs.",
                 gradient: "from-slate-600 to-slate-800",
                 delay: 0.2
               },
               {
                 icon: Zap,
-                title: "Get Your Strategy",
-                description: "Receive a complete financial strategy report in under 30 seconds",
+                title: "3. Funding blueprint",
+                description: "You get a concise strategy with stage, raise, investors, runway, and allocation.",
                 gradient: "from-indigo-600 to-indigo-800",
                 delay: 0.3
               }
@@ -295,9 +294,6 @@ export default function Home() {
       </section>
 
       <HowItWorksModal open={howOpen} onClose={()=>setHowOpen(false)} />
-
-      {/* Trust */}
-      <TrustStats />
 
       {/* Footer is included in RootLayout */}
     </div>

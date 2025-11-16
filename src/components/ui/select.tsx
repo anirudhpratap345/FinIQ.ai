@@ -35,7 +35,9 @@ const SelectTrigger = ({ children }: { children: React.ReactNode }) => <>{childr
 const SelectValue = ({ placeholder }: { placeholder?: string }) => <option value="">{placeholder}</option>;
 const SelectContent = ({ children }: { children: React.ReactNode }) => <>{children}</>;
 const SelectItem = ({ value, children }: { value: string; children: React.ReactNode }) => (
-  <option value={value}>{children}</option>
+  <option value={value} className="bg-white text-black">
+    {children}
+  </option>
 );
 const SelectGroup = ({ children }: { children: React.ReactNode }) => <>{children}</>;
 
