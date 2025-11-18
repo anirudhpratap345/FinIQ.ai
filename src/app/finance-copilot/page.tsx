@@ -34,6 +34,7 @@ export default function FinanceCopilotPage() {
   const buildPrompt = (i: StartupInputs) => {
     return [
       `Startup: ${i.startupName}`,
+      i.ideaDescription ? `Idea: ${i.ideaDescription}` : '',
       `Industry: ${i.industry}`,
       `Market: ${i.targetMarket}`,
       `Stage: ${i.productStage}`,
@@ -73,8 +74,12 @@ export default function FinanceCopilotPage() {
           setError(typeof msg === 'string' ? msg : 'Free trial has been exhausted.');
           return;
         }
-        const msg = typeof res.error === 'string' ? res.error : 'Failed to generate strategy';
-        throw new Error(msg);
+        const msg =
+          typeof res.error === 'string'
+            ? res.error
+            : 'Unable to reach the FinIQ.ai backend. Please check that the service is running and try again.';
+        setError(msg);
+        return;
       }
 
       const data = res.data!;

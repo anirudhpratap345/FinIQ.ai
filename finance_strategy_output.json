@@ -6,7 +6,7 @@
     "rationale": "TechFlow AI has a launched MVP, early revenue, and demonstrable user traction. These characteristics align with the typical profile of a startup ready for Seed funding to further develop their product and scale their customer base.",
     "stage_characteristics": "Launched MVP, early revenue ($5000 MRR), 5 paying customers, 20% MoM growth, seeking $500k"
   },
-  "raise_amount": {
+  "raise_amount": { 
     "recommended_amount": "$600K-$800K",
     "minimum_viable": "$400K",
     "optimal_amount": "$700K",

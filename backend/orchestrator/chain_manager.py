@@ -12,7 +12,8 @@ from agents import (
     RaiseAmountAgent,
     InvestorTypeAgent,
     RunwayAgent,
-    FinancialPriorityAgent
+    FinancialPriorityAgent,
+    IdeaUnderstandingAgent,
 )
 from utils import validate_startup_input, input_to_dict
 
@@ -53,6 +54,7 @@ class ChainManager:
         # Initialize all agents
         try:
             self.agents = [
+                IdeaUnderstandingAgent(api_key=api_key),
                 FundingStageAgent(api_key=api_key),
                 RaiseAmountAgent(api_key=api_key),
                 InvestorTypeAgent(api_key=api_key),
@@ -84,6 +86,21 @@ class ChainManager:
             logger.info("\n[STEP 1] Validating input data...")
             validated_input = validate_startup_input(raw_input)
             input_dict = input_to_dict(validated_input)
+
+            # Normalize naming for descriptions so prompts can use a consistent shape
+            input_dict["startup_name"] = input_dict.get("startupName", "")
+            # Prefer an explicit one-line description if provided, otherwise fall back to the name
+            input_dict["one_line_description"] = (
+                input_dict.get("oneLineDescription")
+                or input_dict.get("startupName", "")
+            )
+            # Prefer a dedicated ideaDescription; fall back to tractionSummary if needed
+            input_dict["idea_description"] = (
+                input_dict.get("ideaDescription")
+                or input_dict.get("tractionSummary")
+                or ""
+            )
+
             logger.info(f"[OK] Input validated for: {input_dict['startupName']}")
             
             # Step 2: Execute agent chain
@@ -96,10 +113,16 @@ class ChainManager:
                 try:
                     # Run agent
                     agent_output = agent.run(input_dict, self.context)
-                    
+
                     # Store output in context
                     agent_key = self._get_agent_key(agent.name)
                     self.context[agent_key] = agent_output
+
+                    # Make idea understanding profile available to all downstream agents
+                    if agent_key == "idea_understanding":
+                        self.context["idea_profile"] = agent_output
+                        # Also attach to input dict so prompt templates can see it
+                        input_dict["ideaProfile"] = agent_output
                     
                     # Log execution
                     self.execution_log.append({
@@ -171,6 +194,7 @@ class ChainManager:
         """
         return {
             "startup_name": self.context["input"]["startupName"],
+            "idea_understanding": self.context.get("idea_understanding", {}),
             "funding_stage": self.context.get("funding_stage", {}),
             "raise_amount": self.context.get("raise_amount", {}),
             "investor_type": self.context.get("investor_type", {}),

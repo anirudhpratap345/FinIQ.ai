@@ -8,14 +8,66 @@ class PromptTemplates:
     """Collection of all agent prompt templates."""
     
     @staticmethod
+    def idea_understanding_agent(startup_data: dict) -> str:
+        """Prompt for understanding the startup idea and deriving a structured profile."""
+        return f"""You are a senior startup analyst. Your job is to deeply understand a startup idea and output a concise, structured profile.
+
+Startup Inputs:
+- Name: {startup_data.get('startupName', 'N/A')}
+- One-line summary (if any): {startup_data.get('startupName', 'N/A')}
+- Idea description: {startup_data.get('ideaDescription', 'N/A')}
+- Industry: {startup_data.get('industry', 'N/A')}
+- Business model: {startup_data.get('businessModel', 'N/A')}
+- Target market: {startup_data.get('targetMarket', 'N/A')}
+
+Your task:
+- Infer the economic and operational shape of this startup.
+- Focus on capital intensity, burn profile, hardware vs software, regulation, and team needs.
+
+Output JSON ONLY in this format:
+{{
+  "category": "short domain label like 'AI Infrastructure' or 'Fintech SaaS'",
+  "business_model": "short description of how this startup makes money",
+  "capital_intensity": "Very High | High | Medium | Low",
+  "burn_profile": "Very High | High | Medium | Low",
+  "hardware_dependency": "Very High | High | Medium | Low",
+  "operational_complexity": "Very High | High | Medium | Low",
+  "regulation_risk": "Very High | High | Medium | Low",
+  "scalability_model": "one sentence on how it scales",
+  "margin_profile": "Very High | High | Medium | Low",
+  "team_requirements": ["list of key roles and skills that matter most"],
+  "notes": "one or two sentences of additional context"
+}}
+
+Return ONLY valid JSON. No markdown, no commentary."""
+    
+    @staticmethod
     def funding_stage_agent(startup_data: dict) -> str:
         """Prompt for determining funding stage."""
+        idea_profile = startup_data.get('ideaProfile')
+        idea_profile_str = f"{idea_profile}" if idea_profile else "Not available"
+
+        startup_name = startup_data.get('startup_name') or startup_data.get('startupName', 'N/A')
+        one_line = startup_data.get('one_line_description') or startup_data.get('oneLineDescription') or startup_name
+        idea_desc = startup_data.get('idea_description') or startup_data.get('ideaDescription', 'N/A')
+
         return f"""You are a senior startup finance advisor specializing in funding strategies.
 
 **Your Role:** Analyze the startup profile and determine the most appropriate funding stage.
 
+Startup Name:
+{startup_name}
+
+One-line Description:
+{one_line}
+
+Full Startup Idea Description:
+{idea_desc}
+
 **Startup Profile:**
-- Name: {startup_data.get('startupName', 'N/A')}
+- Name: {startup_name}
+- Idea Description: {idea_desc}
+- Idea Profile (from prior analysis, if present): {idea_profile_str}
 - Industry: {startup_data.get('industry', 'N/A')}
 - Target Market: {startup_data.get('targetMarket', 'N/A')}
 - Geography: {startup_data.get('geography', 'N/A')}
@@ -28,6 +80,8 @@ class PromptTemplates:
 - Funding Goal: ${startup_data.get('fundingGoal', 'Not specified')}
 
 **Task:** Determine the funding stage this startup should target.
+Use ALL information provided (including the full description and idea profile) to determine the most accurate output.
+Do not fallback unless absolutely necessary (for example, if the description is unintelligible).
 
 **Available Stages:**
 - Idea Stage (no product yet)
@@ -50,11 +104,29 @@ Return ONLY valid JSON, no markdown or extra text."""
     @staticmethod
     def raise_amount_agent(startup_data: dict, funding_stage: str) -> str:
         """Prompt for determining raise amount."""
+        idea_profile = startup_data.get('ideaProfile')
+        idea_profile_str = f"{idea_profile}" if idea_profile else "Not available"
+
+        startup_name = startup_data.get('startup_name') or startup_data.get('startupName', 'N/A')
+        one_line = startup_data.get('one_line_description') or startup_data.get('oneLineDescription') or startup_name
+        idea_desc = startup_data.get('idea_description') or startup_data.get('ideaDescription', 'N/A')
+
         return f"""You are a startup CFO advisor specializing in fundraising strategy.
 
 **Your Role:** Recommend the ideal funding amount to raise.
 
+Startup Name:
+{startup_name}
+
+One-line Description:
+{one_line}
+
+Full Startup Idea Description:
+{idea_desc}
+
 **Startup Profile:**
+- Idea Description: {idea_desc}
+- Idea Profile (from prior analysis, if present): {idea_profile_str}
 - Industry: {startup_data.get('industry', 'N/A')}
 - Target Market: {startup_data.get('targetMarket', 'N/A')}
 - Team Size: {startup_data.get('teamSize', 0)}
@@ -69,6 +141,8 @@ Return ONLY valid JSON, no markdown or extra text."""
 3. Industry capital requirements
 4. Runway target (18-24 months typical)
 5. User's stated goal (if provided)
+Use ALL information provided (including the full description and idea profile) to determine the most accurate output.
+Do not fallback unless absolutely necessary.
 
 **Output Format (JSON only):**
 {{
@@ -90,11 +164,29 @@ Return ONLY valid JSON, no markdown or extra text."""
     @staticmethod
     def investor_type_agent(startup_data: dict, funding_stage: str, raise_amount: str) -> str:
         """Prompt for identifying ideal investor types."""
+        idea_profile = startup_data.get('ideaProfile')
+        idea_profile_str = f"{idea_profile}" if idea_profile else "Not available"
+
+        startup_name = startup_data.get('startup_name') or startup_data.get('startupName', 'N/A')
+        one_line = startup_data.get('one_line_description') or startup_data.get('oneLineDescription') or startup_name
+        idea_desc = startup_data.get('idea_description') or startup_data.get('ideaDescription', 'N/A')
+
         return f"""You are a startup fundraising strategist with deep investor network knowledge.
 
 **Your Role:** Identify the best investor types for this startup.
 
+Startup Name:
+{startup_name}
+
+One-line Description:
+{one_line}
+
+Full Startup Idea Description:
+{idea_desc}
+
 **Startup Profile:**
+- Idea Description: {idea_desc}
+- Idea Profile (from prior analysis, if present): {idea_profile_str}
 - Industry: {startup_data.get('industry', 'N/A')}
 - Target Market: {startup_data.get('targetMarket', 'N/A')}
 - Geography: {startup_data.get('geography', 'N/A')}
@@ -103,6 +195,8 @@ Return ONLY valid JSON, no markdown or extra text."""
 - Business Model: {startup_data.get('businessModel', 'N/A')}
 
 **Task:** Recommend investor types that are best suited for this startup.
+Use ALL information provided (including the full description and idea profile) to determine the most accurate output.
+Do not fallback unless absolutely necessary.
 
 **Investor Categories:**
 - Angel Investors (individual high-net-worth)
@@ -130,11 +224,29 @@ Return ONLY valid JSON, no markdown or extra text."""
     @staticmethod
     def runway_agent(startup_data: dict, raise_amount: str) -> str:
         """Prompt for calculating runway."""
+        idea_profile = startup_data.get('ideaProfile')
+        idea_profile_str = f"{idea_profile}" if idea_profile else "Not available"
+
+        startup_name = startup_data.get('startup_name') or startup_data.get('startupName', 'N/A')
+        one_line = startup_data.get('one_line_description') or startup_data.get('oneLineDescription') or startup_name
+        idea_desc = startup_data.get('idea_description') or startup_data.get('ideaDescription', 'N/A')
+
         return f"""You are a startup financial planning expert.
 
 **Your Role:** Calculate expected runway and burn rate guidance.
 
+Startup Name:
+{startup_name}
+
+One-line Description:
+{one_line}
+
+Full Startup Idea Description:
+{idea_desc}
+
 **Startup Profile:**
+- Idea Description: {idea_desc}
+- Idea Profile (from prior analysis, if present): {idea_profile_str}
 - Team Size: {startup_data.get('teamSize', 0)}
 - Monthly Revenue: ${startup_data.get('monthlyRevenue', 0)}
 - Industry: {startup_data.get('industry', 'N/A')}
@@ -151,6 +263,8 @@ Return ONLY valid JSON, no markdown or extra text."""
 4. Geography-based cost differences
 5. Revenue (if any) offsetting burn
 6. Target runway: 18-24 months
+Use ALL information provided (including the full description and idea profile) to determine the most accurate output.
+Do not fallback unless absolutely necessary.
 
 **Output Format (JSON only):**
 {{
@@ -171,11 +285,29 @@ Return ONLY valid JSON, no markdown or extra text."""
     @staticmethod
     def financial_priority_agent(startup_data: dict, context: dict) -> str:
         """Prompt for determining financial priorities."""
+        idea_profile = startup_data.get('ideaProfile')
+        idea_profile_str = f"{idea_profile}" if idea_profile else "Not available"
+
+        startup_name = startup_data.get('startup_name') or startup_data.get('startupName', 'N/A')
+        one_line = startup_data.get('one_line_description') or startup_data.get('oneLineDescription') or startup_name
+        idea_desc = startup_data.get('idea_description') or startup_data.get('ideaDescription', 'N/A')
+
         return f"""You are a strategic startup advisor focused on financial prioritization.
 
 **Your Role:** Identify the top 3-5 immediate financial priorities.
 
+Startup Name:
+{startup_name}
+
+One-line Description:
+{one_line}
+
+Full Startup Idea Description:
+{idea_desc}
+
 **Startup Profile:**
+- Idea Description: {idea_desc}
+- Idea Profile (from prior analysis, if present): {idea_profile_str}
 - Industry: {startup_data.get('industry', 'N/A')}
 - Product Stage: {startup_data.get('productStage', 'N/A')}
 - Team Size: {startup_data.get('teamSize', 0)}
@@ -189,6 +321,8 @@ Return ONLY valid JSON, no markdown or extra text."""
 - Runway: {context.get('runway', 'N/A')}
 
 **Task:** Define the top financial priorities for the next 6-12 months.
+Use ALL information provided (including the full description and idea profile) to determine the most accurate output.
+Do not fallback unless absolutely necessary.
 
 **Priority Categories:**
 - Fundraising activities

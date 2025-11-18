@@ -19,6 +19,7 @@ export default function FinanceInputForm({ onSubmit, isLoading }: FinanceInputFo
     industry: '',
     targetMarket: 'B2B',
     geography: 'United States',
+    ideaDescription: '',
     teamSize: 1,
     productStage: 'Idea',
     monthlyRevenue: undefined,
@@ -60,6 +61,21 @@ export default function FinanceInputForm({ onSubmit, isLoading }: FinanceInputFo
               placeholder="e.g., AI-powered expense tracker"
               required
               className="mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-white/40"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="ideaDescription" className="text-white/80">
+              Describe your startup idea (2–5 sentences) *
+            </Label>
+            <Textarea
+              id="ideaDescription"
+              value={inputs.ideaDescription}
+              onChange={(e) => setInputs({ ...inputs, ideaDescription: e.target.value })}
+              placeholder="Explain what your product does, who it is for, and why it matters."
+              rows={3}
+              required
+              className="mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-white/40 resize-none"
             />
           </div>
 

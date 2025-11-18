@@ -17,6 +17,7 @@ export interface StartupInputs {
   industry: string; // e.g., "Fintech", "Healthcare", "SaaS"
   targetMarket: 'B2B' | 'B2C' | 'B2B2C';
   geography: string; // e.g., "United States", "India", "UK"
+  ideaDescription: string; // 2–5 sentence explanation of what the startup does
   
   // Team & Product
   teamSize: number; // Current number of people

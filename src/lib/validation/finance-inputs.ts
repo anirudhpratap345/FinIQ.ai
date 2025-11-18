@@ -52,6 +52,14 @@ export function validateStartupInputs(inputs: StartupInputs): InputValidation {
     });
   }
 
+  if (!inputs.ideaDescription || inputs.ideaDescription.trim().length === 0) {
+    errors.push({
+      field: 'ideaDescription',
+      message: 'Startup idea description is required',
+      code: 'REQUIRED_FIELD'
+    });
+  }
+
   // Team size validation
   if (inputs.teamSize < 1) {
     errors.push({
@@ -161,6 +169,7 @@ export function sanitizeStartupInputs(inputs: StartupInputs): StartupInputs {
     geography: inputs.geography.trim(),
     businessModel: inputs.businessModel.trim(),
     mainFinancialConcern: inputs.mainFinancialConcern.trim(),
+    ideaDescription: inputs.ideaDescription.trim(),
     growthRate: inputs.growthRate?.trim() || undefined,
     tractionSummary: inputs.tractionSummary?.trim() || undefined,
     // Ensure numbers are valid
@@ -222,6 +231,7 @@ export function calculateDataCompleteness(inputs: StartupInputs): number {
     inputs.geography,
     inputs.businessModel,
     inputs.mainFinancialConcern,
+    inputs.ideaDescription,
   ];
   const requiredScore = requiredFields.filter(f => f && f.trim().length > 0).length / requiredFields.length;
   score += requiredScore * weights.required;

@@ -100,6 +100,7 @@ export async function analyzeFundingStage(inputs: StartupInputs): Promise<StageA
 
 STARTUP DATA:
 - Name: ${inputs.startupName}
+- Idea: ${inputs.ideaDescription || 'Not provided'}
 - Industry: ${inputs.industry}
 - Product Stage: ${inputs.productStage}
 - Team Size: ${inputs.teamSize}
@@ -143,6 +144,7 @@ export async function calculateRaiseAmount(
 
 STARTUP DATA:
 - Stage: ${stageAnalysis.stage}
+- Idea: ${inputs.ideaDescription || 'Not provided'}
 - Industry: ${inputs.industry}
 - Team Size: ${inputs.teamSize}
 - Geography: ${inputs.geography}
@@ -190,6 +192,7 @@ export async function matchInvestorTypes(
   const prompt = `You are a startup-investor matching expert. Recommend 2-4 suitable investor types for this startup.
 
 STARTUP PROFILE:
+- Idea: ${inputs.ideaDescription || 'Not provided'}
 - Stage: ${stageAnalysis.stage}
 - Raise Amount: $${raiseCalculation.recommended.toLocaleString()}
 - Industry: ${inputs.industry}
@@ -249,6 +252,7 @@ export async function calculateRunway(
 
 STARTUP DATA:
 - Team Size: ${inputs.teamSize} people
+- Idea: ${inputs.ideaDescription || 'Not provided'}
 - Raise Amount: $${raiseCalculation.recommended.toLocaleString()}
 - Geography: ${inputs.geography}
 - Industry: ${inputs.industry}
@@ -301,6 +305,7 @@ export async function allocatePriorities(
   const prompt = `You are a startup resource allocation advisor. Recommend how to allocate the raised funds across categories.
 
 STARTUP CONTEXT:
+- Idea: ${inputs.ideaDescription || 'Not provided'}
 - Stage: ${stageAnalysis.stage}
 - Product Stage: ${inputs.productStage}
 - Main Concern: ${inputs.mainFinancialConcern}

@@ -42,7 +42,9 @@ app.add_middleware(
 # Force in-memory limiter on Render (disable Redis for now)
 # REDIS_URL = os.getenv("REDIS_URL")
 use_redis_limiter = False
-TRIAL_LIMIT = int(os.getenv("FINANCE_TRIAL_LIMIT", 2))
+# Increase default trial limit for local development; can still be overridden via FINANCE_TRIAL_LIMIT
+TRIAL_LIMIT = int(os.getenv("FINANCE_TRIAL_LIMIT", 1000))
+logger.info(f"[CONFIG] Finance trial limit set to {TRIAL_LIMIT}")
 
 if use_redis_limiter:
     try:
