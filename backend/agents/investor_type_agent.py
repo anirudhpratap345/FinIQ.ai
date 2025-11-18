@@ -44,15 +44,28 @@ class InvestorTypeAgent(BaseAgent):
         Requires:
         - context["funding_stage"]
         - context["raise_amount"]
+        - context["idea_profile"]
         """
-        logger.info(f"[RUN] {self.name} processing...")
+        startup_name = input_data.get('startupName') or input_data.get('startup_name', 'Unknown')
+        logger.info(f"[RUN] {self.name} processing startup: {startup_name}")
+        
+        # Log context fields received
+        logger.info(f"[CONTEXT] Received context keys: {list(context.keys())}")
+        idea_profile = context.get('idea_profile') or context.get('ideaProfile')
+        funding_stage = context.get("funding_stage", {}).get("funding_stage", "Seed")
+        raise_amount = context.get("raise_amount", {}).get("recommended_amount", "$500K")
+        
+        if idea_profile:
+            logger.info(f"[CONTEXT] Idea profile - category: {idea_profile.get('category')}, regulation_risk: {idea_profile.get('regulation_risk')}")
+        else:
+            logger.warning(f"[CONTEXT] No idea_profile found in context")
+        
+        logger.info(f"[CONTEXT] Funding stage: {funding_stage}, Raise amount: {raise_amount}")
         
         try:
-            funding_stage = context.get("funding_stage", {}).get("funding_stage", "Seed")
-            raise_amount = context.get("raise_amount", {}).get("recommended_amount", "$500K")
-            
             prompt = PromptTemplates.investor_type_agent(input_data, funding_stage, raise_amount)
             
+            logger.info(f"[CALL] Calling Gemini API...")
             response = self.model.generate_content(
                 prompt,
                 generation_config={
@@ -63,6 +76,7 @@ class InvestorTypeAgent(BaseAgent):
             )
             
             result = self._parse_response(response.text)
+            logger.info(f"[OUTPUT] Primary investor type: {result.get('primary_investor_type')}")
             self.log_output(result)
             return result
             

@@ -41,18 +41,31 @@ class RaiseAmountAgent(BaseAgent):
         """
         Calculate recommended raise amount.
         
-        Requires context["funding_stage"] from FundingStageAgent.
+        Requires context["funding_stage"] from FundingStageAgent and 
+        context["idea_profile"] from IdeaUnderstandingAgent.
         """
-        logger.info(f"[RUN] {self.name} processing...")
+        startup_name = input_data.get('startupName') or input_data.get('startup_name', 'Unknown')
+        logger.info(f"[RUN] {self.name} processing startup: {startup_name}")
+        
+        # Log context fields received
+        logger.info(f"[CONTEXT] Received context keys: {list(context.keys())}")
+        idea_profile = context.get('idea_profile') or context.get('ideaProfile')
+        funding_stage_data = context.get("funding_stage", {})
+        funding_stage = funding_stage_data.get("funding_stage", "Seed")
+        
+        if idea_profile:
+            logger.info(f"[CONTEXT] Idea profile - capital_intensity: {idea_profile.get('capital_intensity')}, burn_profile: {idea_profile.get('burn_profile')}")
+        else:
+            logger.warning(f"[CONTEXT] No idea_profile found in context")
+        
+        logger.info(f"[CONTEXT] Previous funding stage: {funding_stage}")
         
         try:
-            # Get funding stage from previous agent
-            funding_stage = context.get("funding_stage", {}).get("funding_stage", "Seed")
-            
             # Generate prompt
             prompt = PromptTemplates.raise_amount_agent(input_data, funding_stage)
             
             # Call Gemini
+            logger.info(f"[CALL] Calling Gemini API...")
             response = self.model.generate_content(
                 prompt,
                 generation_config={
@@ -63,6 +76,7 @@ class RaiseAmountAgent(BaseAgent):
             )
             
             result = self._parse_response(response.text)
+            logger.info(f"[OUTPUT] Recommended amount: {result.get('recommended_amount')}")
             self.log_output(result)
             return result
             

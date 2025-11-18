@@ -41,9 +41,19 @@ class FinancialPriorityAgent(BaseAgent):
         """
         Define financial priorities.
         
-        Uses full context from all previous agents.
+        Uses full context from all previous agents including idea_profile.
         """
-        logger.info(f"[RUN] {self.name} processing...")
+        startup_name = input_data.get('startupName') or input_data.get('startup_name', 'Unknown')
+        logger.info(f"[RUN] {self.name} processing startup: {startup_name}")
+        
+        # Log context fields received
+        logger.info(f"[CONTEXT] Received context keys: {list(context.keys())}")
+        idea_profile = context.get('idea_profile') or context.get('ideaProfile')
+        
+        if idea_profile:
+            logger.info(f"[CONTEXT] Idea profile - category: {idea_profile.get('category')}, team_requirements: {idea_profile.get('team_requirements')}")
+        else:
+            logger.warning(f"[CONTEXT] No idea_profile found in context")
         
         try:
             # Build context summary for prompt
@@ -54,8 +64,11 @@ class FinancialPriorityAgent(BaseAgent):
                 "runway": context.get("runway", {}).get("estimated_runway_months", "N/A")
             }
             
+            logger.info(f"[CONTEXT] Context summary: {context_summary}")
+            
             prompt = PromptTemplates.financial_priority_agent(input_data, context_summary)
             
+            logger.info(f"[CALL] Calling Gemini API...")
             response = self.model.generate_content(
                 prompt,
                 generation_config={
@@ -66,6 +79,7 @@ class FinancialPriorityAgent(BaseAgent):
             )
             
             result = self._parse_response(response.text)
+            logger.info(f"[OUTPUT] Generated {len(result.get('priorities', []))} financial priorities")
             self.log_output(result)
             return result
             

@@ -41,15 +41,27 @@ class RunwayAgent(BaseAgent):
         """
         Calculate runway and burn rate.
         
-        Requires context["raise_amount"].
+        Requires context["raise_amount"] and context["idea_profile"].
         """
-        logger.info(f"[RUN] {self.name} processing...")
+        startup_name = input_data.get('startupName') or input_data.get('startup_name', 'Unknown')
+        logger.info(f"[RUN] {self.name} processing startup: {startup_name}")
+        
+        # Log context fields received
+        logger.info(f"[CONTEXT] Received context keys: {list(context.keys())}")
+        idea_profile = context.get('idea_profile') or context.get('ideaProfile')
+        raise_amount = context.get("raise_amount", {}).get("optimal_amount", "$500K")
+        
+        if idea_profile:
+            logger.info(f"[CONTEXT] Idea profile - burn_profile: {idea_profile.get('burn_profile')}, operational_complexity: {idea_profile.get('operational_complexity')}")
+        else:
+            logger.warning(f"[CONTEXT] No idea_profile found in context")
+        
+        logger.info(f"[CONTEXT] Raise amount: {raise_amount}")
         
         try:
-            raise_amount = context.get("raise_amount", {}).get("optimal_amount", "$500K")
-            
             prompt = PromptTemplates.runway_agent(input_data, raise_amount)
             
+            logger.info(f"[CALL] Calling Gemini API...")
             response = self.model.generate_content(
                 prompt,
                 generation_config={
@@ -60,6 +72,7 @@ class RunwayAgent(BaseAgent):
             )
             
             result = self._parse_response(response.text)
+            logger.info(f"[OUTPUT] Runway: {result.get('estimated_runway_months')} months, Burn: {result.get('monthly_burn_rate')}")
             self.log_output(result)
             return result
             

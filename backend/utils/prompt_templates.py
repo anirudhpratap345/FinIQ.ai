@@ -10,24 +10,47 @@ class PromptTemplates:
     @staticmethod
     def idea_understanding_agent(startup_data: dict) -> str:
         """Prompt for understanding the startup idea and deriving a structured profile."""
+        startup_name = startup_data.get('startup_name') or startup_data.get('startupName', 'N/A')
+        one_line = startup_data.get('one_line_description') or startup_data.get('oneLineDescription') or startup_name
+        idea_desc = startup_data.get('idea_description') or startup_data.get('ideaDescription', 'N/A')
+        industry = startup_data.get('industry', 'N/A')
+        business_model = startup_data.get('businessModel') or startup_data.get('business_model', 'N/A')
+        target_market = startup_data.get('targetMarket') or startup_data.get('target_market', 'N/A')
+        
         return f"""You are a senior startup analyst. Your job is to deeply understand a startup idea and output a concise, structured profile.
 
-Startup Inputs:
-- Name: {startup_data.get('startupName', 'N/A')}
-- One-line summary (if any): {startup_data.get('startupName', 'N/A')}
-- Idea description: {startup_data.get('ideaDescription', 'N/A')}
-- Industry: {startup_data.get('industry', 'N/A')}
-- Business model: {startup_data.get('businessModel', 'N/A')}
-- Target market: {startup_data.get('targetMarket', 'N/A')}
+STARTUP INPUTS:
+- Name: {startup_name}
+- One-line Description: {one_line}
+- Full Idea Description: {idea_desc}
+- Industry: {industry}
+- Business Model: {business_model}
+- Target Market: {target_market}
 
-Your task:
-- Infer the economic and operational shape of this startup.
-- Focus on capital intensity, burn profile, hardware vs software, regulation, and team needs.
+YOUR TASK:
+Analyze this startup across the following dimensions:
+1. What category does it belong to? (e.g., "AI Infrastructure", "FinTech SaaS", "Food Delivery")
+2. How does it make money?
+3. Capital intensity (Very High/High/Medium/Low) - Does it need lots of upfront CapEx?
+4. Burn profile (Very High/High/Medium/Low) - Monthly burn rate expectations
+5. Hardware dependency (Very High/High/Medium/Low) - Reliance on physical infrastructure
+6. Operational complexity (Very High/High/Medium/Low) - Day-to-day operational demands
+7. Regulation risk (Very High/High/Medium/Low) - Compliance and legal overhead
+8. How does it scale?
+9. Margin profile (Very High/High/Medium/Low) - Expected gross margins
+10. What team roles are most critical?
 
-Output JSON ONLY in this format:
+CRITICAL INSTRUCTIONS:
+- DO NOT output any explanation, markdown, comments, or extra text.
+- DO NOT use code fences like ```json or ```.
+- Output ONLY the raw JSON object below with NO other text before or after.
+- Ensure the JSON is valid and parseable.
+- If the input is unclear or nonsense, still return valid JSON with "Unknown" or "Low confidence" values and mark confidence as "low".
+
+OUTPUT FORMAT (return EXACTLY this structure with your values):
 {{
-  "category": "short domain label like 'AI Infrastructure' or 'Fintech SaaS'",
-  "business_model": "short description of how this startup makes money",
+  "category": "short domain label",
+  "business_model": "brief description of revenue model",
   "capital_intensity": "Very High | High | Medium | Low",
   "burn_profile": "Very High | High | Medium | Low",
   "hardware_dependency": "Very High | High | Medium | Low",
@@ -35,17 +58,35 @@ Output JSON ONLY in this format:
   "regulation_risk": "Very High | High | Medium | Low",
   "scalability_model": "one sentence on how it scales",
   "margin_profile": "Very High | High | Medium | Low",
-  "team_requirements": ["list of key roles and skills that matter most"],
+  "team_requirements": ["role1", "role2", "role3"],
+  "confidence": "high | medium | low",
   "notes": "one or two sentences of additional context"
 }}
 
-Return ONLY valid JSON. No markdown, no commentary."""
+Remember: Output ONLY the JSON object. No markdown. No explanation. No code fences. Just the raw JSON."""
     
     @staticmethod
     def funding_stage_agent(startup_data: dict) -> str:
         """Prompt for determining funding stage."""
         idea_profile = startup_data.get('ideaProfile')
-        idea_profile_str = f"{idea_profile}" if idea_profile else "Not available"
+        
+        # Extract specific fields from idea_profile for better context
+        if idea_profile and isinstance(idea_profile, dict):
+            idea_profile_section = f"""
+**IDEA PROFILE (from IdeaUnderstandingAgent):**
+- Category: {idea_profile.get('category', 'N/A')}
+- Business Model: {idea_profile.get('business_model', 'N/A')}
+- Capital Intensity: {idea_profile.get('capital_intensity', 'N/A')}
+- Burn Profile: {idea_profile.get('burn_profile', 'N/A')}
+- Hardware Dependency: {idea_profile.get('hardware_dependency', 'N/A')}
+- Operational Complexity: {idea_profile.get('operational_complexity', 'N/A')}
+- Regulation Risk: {idea_profile.get('regulation_risk', 'N/A')}
+- Scalability Model: {idea_profile.get('scalability_model', 'N/A')}
+- Margin Profile: {idea_profile.get('margin_profile', 'N/A')}
+- Confidence: {idea_profile.get('confidence', 'N/A')}
+"""
+        else:
+            idea_profile_section = "\n**IDEA PROFILE:** Not available (will rely on basic inputs only)\n"
 
         startup_name = startup_data.get('startup_name') or startup_data.get('startupName', 'N/A')
         one_line = startup_data.get('one_line_description') or startup_data.get('oneLineDescription') or startup_name
@@ -55,19 +96,10 @@ Return ONLY valid JSON. No markdown, no commentary."""
 
 **Your Role:** Analyze the startup profile and determine the most appropriate funding stage.
 
-Startup Name:
-{startup_name}
-
-One-line Description:
-{one_line}
-
-Full Startup Idea Description:
-{idea_desc}
-
-**Startup Profile:**
+**STARTUP INPUTS:**
 - Name: {startup_name}
-- Idea Description: {idea_desc}
-- Idea Profile (from prior analysis, if present): {idea_profile_str}
+- One-line Description: {one_line}
+- Full Idea Description: {idea_desc}
 - Industry: {startup_data.get('industry', 'N/A')}
 - Target Market: {startup_data.get('targetMarket', 'N/A')}
 - Geography: {startup_data.get('geography', 'N/A')}
@@ -78,10 +110,8 @@ Full Startup Idea Description:
 - Traction: {startup_data.get('tractionSummary', 'N/A')}
 - Business Model: {startup_data.get('businessModel', 'N/A')}
 - Funding Goal: ${startup_data.get('fundingGoal', 'Not specified')}
-
-**Task:** Determine the funding stage this startup should target.
-Use ALL information provided (including the full description and idea profile) to determine the most accurate output.
-Do not fallback unless absolutely necessary (for example, if the description is unintelligible).
+{idea_profile_section}
+**CRITICAL:** Use the Idea Profile fields above (especially capital intensity, burn profile, operational complexity) to refine your funding stage recommendation. These fields provide deep context about the startup's economic characteristics.
 
 **Available Stages:**
 - Idea Stage (no product yet)
@@ -95,7 +125,7 @@ Do not fallback unless absolutely necessary (for example, if the description is 
 {{
   "funding_stage": "one of the stages above",
   "confidence": "high/medium/low",
-  "rationale": "2-3 sentence explanation based on product stage, revenue, and traction",
+  "rationale": "2-3 sentence explanation based on product stage, revenue, traction, and idea profile",
   "stage_characteristics": "key indicators that led to this recommendation"
 }}
 
@@ -105,7 +135,20 @@ Return ONLY valid JSON, no markdown or extra text."""
     def raise_amount_agent(startup_data: dict, funding_stage: str) -> str:
         """Prompt for determining raise amount."""
         idea_profile = startup_data.get('ideaProfile')
-        idea_profile_str = f"{idea_profile}" if idea_profile else "Not available"
+        
+        # Extract specific fields from idea_profile
+        if idea_profile and isinstance(idea_profile, dict):
+            idea_profile_section = f"""
+**IDEA PROFILE (from IdeaUnderstandingAgent):**
+- Category: {idea_profile.get('category', 'N/A')}
+- Capital Intensity: {idea_profile.get('capital_intensity', 'N/A')} (CRITICAL for raise amount)
+- Burn Profile: {idea_profile.get('burn_profile', 'N/A')} (CRITICAL for raise amount)
+- Hardware Dependency: {idea_profile.get('hardware_dependency', 'N/A')}
+- Operational Complexity: {idea_profile.get('operational_complexity', 'N/A')}
+- Margin Profile: {idea_profile.get('margin_profile', 'N/A')}
+"""
+        else:
+            idea_profile_section = "\n**IDEA PROFILE:** Not available\n"
 
         startup_name = startup_data.get('startup_name') or startup_data.get('startupName', 'N/A')
         one_line = startup_data.get('one_line_description') or startup_data.get('oneLineDescription') or startup_name
@@ -115,18 +158,9 @@ Return ONLY valid JSON, no markdown or extra text."""
 
 **Your Role:** Recommend the ideal funding amount to raise.
 
-Startup Name:
-{startup_name}
-
-One-line Description:
-{one_line}
-
-Full Startup Idea Description:
-{idea_desc}
-
-**Startup Profile:**
+**STARTUP INPUTS:**
+- Name: {startup_name}
 - Idea Description: {idea_desc}
-- Idea Profile (from prior analysis, if present): {idea_profile_str}
 - Industry: {startup_data.get('industry', 'N/A')}
 - Target Market: {startup_data.get('targetMarket', 'N/A')}
 - Team Size: {startup_data.get('teamSize', 0)}
@@ -134,13 +168,19 @@ Full Startup Idea Description:
 - Funding Stage: {funding_stage}
 - Funding Goal (user input): ${startup_data.get('fundingGoal', 'Not specified')}
 - Main Financial Concern: {startup_data.get('mainFinancialConcern', 'N/A')}
+{idea_profile_section}
+**CRITICAL:** Use Capital Intensity and Burn Profile to adjust the raise amount:
+- Very High Capital Intensity → Increase raise by 50-100% above stage average
+- High Burn Profile → Add 6 months of extra runway buffer
+- Hardware-heavy startups → Factor in equipment/infrastructure costs
 
 **Task:** Calculate the recommended raise amount based on:
 1. Typical range for this funding stage
 2. Team size and hiring needs
-3. Industry capital requirements
-4. Runway target (18-24 months typical)
-5. User's stated goal (if provided)
+3. Capital intensity from idea profile
+4. Burn profile expectations
+5. Runway target (18-24 months typical)
+6. User's stated goal (if provided)
 Use ALL information provided (including the full description and idea profile) to determine the most accurate output.
 Do not fallback unless absolutely necessary.
 
@@ -165,7 +205,20 @@ Return ONLY valid JSON, no markdown or extra text."""
     def investor_type_agent(startup_data: dict, funding_stage: str, raise_amount: str) -> str:
         """Prompt for identifying ideal investor types."""
         idea_profile = startup_data.get('ideaProfile')
-        idea_profile_str = f"{idea_profile}" if idea_profile else "Not available"
+        
+        # Extract specific fields from idea_profile
+        if idea_profile and isinstance(idea_profile, dict):
+            idea_profile_section = f"""
+**IDEA PROFILE (from IdeaUnderstandingAgent):**
+- Category: {idea_profile.get('category', 'N/A')} (helps identify domain-focused investors)
+- Capital Intensity: {idea_profile.get('capital_intensity', 'N/A')}
+- Regulation Risk: {idea_profile.get('regulation_risk', 'N/A')} (CRITICAL for investor selection)
+- Hardware Dependency: {idea_profile.get('hardware_dependency', 'N/A')}
+- Margin Profile: {idea_profile.get('margin_profile', 'N/A')}
+- Scalability Model: {idea_profile.get('scalability_model', 'N/A')}
+"""
+        else:
+            idea_profile_section = "\n**IDEA PROFILE:** Not available\n"
 
         startup_name = startup_data.get('startup_name') or startup_data.get('startupName', 'N/A')
         one_line = startup_data.get('one_line_description') or startup_data.get('oneLineDescription') or startup_name
@@ -175,28 +228,21 @@ Return ONLY valid JSON, no markdown or extra text."""
 
 **Your Role:** Identify the best investor types for this startup.
 
-Startup Name:
-{startup_name}
-
-One-line Description:
-{one_line}
-
-Full Startup Idea Description:
-{idea_desc}
-
-**Startup Profile:**
+**STARTUP INPUTS:**
+- Name: {startup_name}
 - Idea Description: {idea_desc}
-- Idea Profile (from prior analysis, if present): {idea_profile_str}
 - Industry: {startup_data.get('industry', 'N/A')}
 - Target Market: {startup_data.get('targetMarket', 'N/A')}
 - Geography: {startup_data.get('geography', 'N/A')}
 - Funding Stage: {funding_stage}
 - Raise Amount: {raise_amount}
 - Business Model: {startup_data.get('businessModel', 'N/A')}
-
-**Task:** Recommend investor types that are best suited for this startup.
-Use ALL information provided (including the full description and idea profile) to determine the most accurate output.
-Do not fallback unless absolutely necessary.
+{idea_profile_section}
+**CRITICAL:** Use the Idea Profile to match investors:
+- High Regulation Risk → Seek investors with domain expertise (e.g., FinTech VCs, HealthTech VCs)
+- Hardware-heavy → Prefer deep-tech investors, avoid pure software VCs
+- High Capital Intensity → Target larger funds with multi-stage capacity
+- Specific Category → Match to sector-focused investors (AI Infrastructure → AI funds, FinTech → FinTech funds)
 
 **Investor Categories:**
 - Angel Investors (individual high-net-worth)
@@ -214,7 +260,7 @@ Do not fallback unless absolutely necessary.
   "primary_investor_type": "most suitable type",
   "secondary_options": ["alternative type 1", "alternative type 2"],
   "avoid": ["types that don't make sense for this stage/model"],
-  "rationale": "why these investors are ideal",
+  "rationale": "why these investors are ideal based on category, regulation risk, and capital needs",
   "target_profile": "specific characteristics to look for in investors",
   "approach_strategy": "how to approach these investors"
 }}
@@ -225,7 +271,19 @@ Return ONLY valid JSON, no markdown or extra text."""
     def runway_agent(startup_data: dict, raise_amount: str) -> str:
         """Prompt for calculating runway."""
         idea_profile = startup_data.get('ideaProfile')
-        idea_profile_str = f"{idea_profile}" if idea_profile else "Not available"
+        
+        # Extract specific fields from idea_profile
+        if idea_profile and isinstance(idea_profile, dict):
+            idea_profile_section = f"""
+**IDEA PROFILE (from IdeaUnderstandingAgent):**
+- Burn Profile: {idea_profile.get('burn_profile', 'N/A')} (CRITICAL for runway calculation)
+- Operational Complexity: {idea_profile.get('operational_complexity', 'N/A')} (affects overhead)
+- Hardware Dependency: {idea_profile.get('hardware_dependency', 'N/A')} (affects CapEx)
+- Team Requirements: {idea_profile.get('team_requirements', [])} (affects headcount burn)
+- Capital Intensity: {idea_profile.get('capital_intensity', 'N/A')}
+"""
+        else:
+            idea_profile_section = "\n**IDEA PROFILE:** Not available\n"
 
         startup_name = startup_data.get('startup_name') or startup_data.get('startupName', 'N/A')
         one_line = startup_data.get('one_line_description') or startup_data.get('oneLineDescription') or startup_name
@@ -244,27 +302,32 @@ One-line Description:
 Full Startup Idea Description:
 {idea_desc}
 
-**Startup Profile:**
+**STARTUP INPUTS:**
+- Name: {startup_name}
 - Idea Description: {idea_desc}
-- Idea Profile (from prior analysis, if present): {idea_profile_str}
 - Team Size: {startup_data.get('teamSize', 0)}
 - Monthly Revenue: ${startup_data.get('monthlyRevenue', 0)}
 - Industry: {startup_data.get('industry', 'N/A')}
 - Geography: {startup_data.get('geography', 'N/A')}
 - Raise Amount: {raise_amount}
 - Main Financial Concern: {startup_data.get('mainFinancialConcern', 'N/A')}
+{idea_profile_section}
+**CRITICAL:** Use the Idea Profile to estimate burn rate accurately:
+- High Burn Profile → Monthly burn 30-50% higher than stage average
+- High Operational Complexity → Add 20-30% overhead buffer
+- Hardware Dependency → Factor in CapEx and depreciation
+- Team Requirements → Adjust headcount assumptions by role types
 
 **Task:** Estimate runway and provide burn rate guidance.
 
 **Consider:**
 1. Current team cost (salaries, benefits)
-2. Expected hiring based on raise amount
-3. Industry-standard operational costs
-4. Geography-based cost differences
-5. Revenue (if any) offsetting burn
-6. Target runway: 18-24 months
-Use ALL information provided (including the full description and idea profile) to determine the most accurate output.
-Do not fallback unless absolutely necessary.
+2. Expected hiring based on raise amount and team requirements from idea profile
+3. Burn profile expectations from idea profile
+4. Industry-standard operational costs
+5. Geography-based cost differences
+6. Revenue (if any) offsetting burn
+7. Target runway: 18-24 months
 
 **Output Format (JSON only):**
 {{
@@ -286,7 +349,22 @@ Return ONLY valid JSON, no markdown or extra text."""
     def financial_priority_agent(startup_data: dict, context: dict) -> str:
         """Prompt for determining financial priorities."""
         idea_profile = startup_data.get('ideaProfile')
-        idea_profile_str = f"{idea_profile}" if idea_profile else "Not available"
+        
+        # Extract specific fields from idea_profile
+        if idea_profile and isinstance(idea_profile, dict):
+            idea_profile_section = f"""
+**IDEA PROFILE (from IdeaUnderstandingAgent):**
+- Category: {idea_profile.get('category', 'N/A')}
+- Business Model: {idea_profile.get('business_model', 'N/A')}
+- Capital Intensity: {idea_profile.get('capital_intensity', 'N/A')}
+- Operational Complexity: {idea_profile.get('operational_complexity', 'N/A')}
+- Hardware Dependency: {idea_profile.get('hardware_dependency', 'N/A')}
+- Regulation Risk: {idea_profile.get('regulation_risk', 'N/A')}
+- Team Requirements: {idea_profile.get('team_requirements', [])}
+- Margin Profile: {idea_profile.get('margin_profile', 'N/A')}
+"""
+        else:
+            idea_profile_section = "\n**IDEA PROFILE:** Not available\n"
 
         startup_name = startup_data.get('startup_name') or startup_data.get('startupName', 'N/A')
         one_line = startup_data.get('one_line_description') or startup_data.get('oneLineDescription') or startup_name
@@ -296,18 +374,9 @@ Return ONLY valid JSON, no markdown or extra text."""
 
 **Your Role:** Identify the top 3-5 immediate financial priorities.
 
-Startup Name:
-{startup_name}
-
-One-line Description:
-{one_line}
-
-Full Startup Idea Description:
-{idea_desc}
-
-**Startup Profile:**
+**STARTUP INPUTS:**
+- Name: {startup_name}
 - Idea Description: {idea_desc}
-- Idea Profile (from prior analysis, if present): {idea_profile_str}
 - Industry: {startup_data.get('industry', 'N/A')}
 - Product Stage: {startup_data.get('productStage', 'N/A')}
 - Team Size: {startup_data.get('teamSize', 0)}
@@ -319,10 +388,16 @@ Full Startup Idea Description:
 - Raise Amount: {context.get('raise_amount', 'N/A')}
 - Investor Type: {context.get('investor_type', 'N/A')}
 - Runway: {context.get('runway', 'N/A')}
+{idea_profile_section}
+**CRITICAL:** Use the Idea Profile to tailor priorities:
+- High Regulation Risk → Prioritize compliance, legal setup, regulatory moat
+- Hardware-heavy → Prioritize supply chain, manufacturing partnerships, CapEx planning
+- High Operational Complexity → Focus on process automation, operations hiring
+- Specific Team Requirements → Match hiring priorities to role list
+- Low Margin Profile → Focus on unit economics, cost structure optimization
+- High Capital Intensity → Emphasize long-term partnerships, bulk pricing, reserved capacity
 
 **Task:** Define the top financial priorities for the next 6-12 months.
-Use ALL information provided (including the full description and idea profile) to determine the most accurate output.
-Do not fallback unless absolutely necessary.
 
 **Priority Categories:**
 - Fundraising activities

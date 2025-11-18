@@ -51,7 +51,7 @@ class FundingStageAgent(BaseAgent):
         
         Args:
             input_data: Validated startup input
-            context: Shared context (empty for first agent)
+            context: Shared context (contains idea_profile from IdeaUnderstandingAgent)
             
         Returns:
             {
@@ -61,14 +61,23 @@ class FundingStageAgent(BaseAgent):
                 "stage_characteristics": str
             }
         """
-        logger.info(f"[RUN] {self.name} processing startup: {input_data.get('startupName')}")
+        startup_name = input_data.get('startupName') or input_data.get('startup_name', 'Unknown')
+        logger.info(f"[RUN] {self.name} processing startup: {startup_name}")
+        
+        # Log context fields received
+        idea_profile = context.get('idea_profile') or context.get('ideaProfile')
+        logger.info(f"[CONTEXT] Received context keys: {list(context.keys())}")
+        if idea_profile:
+            logger.info(f"[CONTEXT] Idea profile category: {idea_profile.get('category')}, confidence: {idea_profile.get('confidence')}")
+        else:
+            logger.warning(f"[CONTEXT] No idea_profile found in context")
         
         try:
             # Generate prompt
             prompt = PromptTemplates.funding_stage_agent(input_data)
             
             # Call Gemini API
-            logger.info(f"[API] Calling Gemini API...")
+            logger.info(f"[CALL] Calling Gemini API...")
             response = self.model.generate_content(
                 prompt,
                 generation_config={
@@ -82,7 +91,8 @@ class FundingStageAgent(BaseAgent):
             # Parse response
             result = self._parse_response(response.text)
             
-            # Log output
+            # Log output before returning
+            logger.info(f"[OUTPUT] Funding stage: {result.get('funding_stage')}, confidence: {result.get('confidence')}")
             self.log_output(result)
             
             return result
