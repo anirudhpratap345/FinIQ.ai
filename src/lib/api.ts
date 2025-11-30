@@ -1,5 +1,7 @@
-// Simple API helper to call the FastAPI backend
-// Uses NEXT_PUBLIC_API_BASE if provided, otherwise defaults to http://localhost:8000
+// Simple API helper for talking to the FinIQ.ai backend.
+// In the new architecture, the frontend calls the internal Next.js route
+// /api/finance-strategy, which then proxies to the Python FastAPI backend
+// /api/generate. All agent logic lives in Python.
 
 export type GeneratePayload = {
 	user_id: string;
@@ -18,10 +20,10 @@ export type GenerateError = {
 };
 
 export function getApiBase(): string {
-    // If deployed with a backend domain, set NEXT_PUBLIC_API_BASE_URL to that URL
-    const fromEnv = process.env.NEXT_PUBLIC_API_BASE_URL as string | undefined;
-    if (fromEnv && fromEnv.length > 0) return fromEnv.replace(/\/$/, "");
-    return "http://localhost:8000";
+	// If deployed with a backend domain, set NEXT_PUBLIC_API_BASE_URL to that URL
+	const fromEnv = process.env.NEXT_PUBLIC_API_BASE_URL as string | undefined;
+	if (fromEnv && fromEnv.length > 0) return fromEnv.replace(/\/$/, "");
+	return "http://localhost:8000";
 }
 
 export async function postGenerate(payload: GeneratePayload): Promise<{
@@ -30,9 +32,9 @@ export async function postGenerate(payload: GeneratePayload): Promise<{
 	data?: GenerateSuccess;
 	error?: GenerateError | string;
 }> {
-	const base = getApiBase();
 	try {
-		const res = await fetch(`${base}/api/generate`, {
+		// Call the Next.js API route, which proxies to the Python backend.
+		const res = await fetch('/api/finance-strategy', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(payload),

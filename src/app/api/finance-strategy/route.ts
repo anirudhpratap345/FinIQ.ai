@@ -1,107 +1,70 @@
 /**
- * Finance Strategy API
- * POST /api/finance-strategy - Generate funding strategy
+ * Finance Strategy API (Proxy)
+ * 
+ * POST /api/finance-strategy
+ *   → forwards request to Python backend /api/generate
+ *   → returns exactly the JSON produced by the Python backend
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { generateFinanceStrategy } from '@/lib/agents/finance-agents';
-import { validateStartupInputs, sanitizeStartupInputs } from '@/lib/validation/finance-inputs';
-import type { StartupInputs, FinanceStrategyResponse } from '@/types/finance-copilot';
+import { getApiBase } from '@/lib/api';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    // Parse request body
-    const body = await request.json();
-    const inputs: StartupInputs = body.inputs || body;
+    const payload = await request.json();
 
-    console.log(`📨 Finance strategy request for: ${inputs.startupName}`);
+    const base = getApiBase();
+    const backendUrl = `${base}/api/generate`;
 
-    // Validate inputs
-    const validation = validateStartupInputs(inputs);
-    
-    if (!validation.isValid) {
-      console.error('❌ Validation failed:', validation.errors);
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid input data',
-          details: validation.errors.map(e => e.message).join(', '),
-          validationErrors: validation.errors,
-        },
-        { status: 400 }
-      );
-    }
+    console.log(`📨 Proxying finance-strategy request to backend: ${backendUrl}`);
 
-    // Log warnings if any
-    if (validation.warnings.length > 0) {
-      console.warn('⚠️  Input warnings:', validation.warnings);
-    }
+    const res = await fetch(backendUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
 
-    // Sanitize inputs
-    const sanitizedInputs = sanitizeStartupInputs(inputs);
+    const contentType = res.headers.get('content-type') || '';
+    const isJson = contentType.includes('application/json');
+    const body = isJson ? await res.json() : await res.text();
 
-    // Generate strategy using AI agent chain
-    console.log('🤖 Calling AI agent chain...');
-    const strategy = await generateFinanceStrategy(sanitizedInputs);
+    const duration = Date.now() - startTime;
+    console.log(`✅ Backend responded in ${duration}ms with status ${res.status}`);
 
-    const processingTime = Date.now() - startTime;
-    console.log(`✅ Strategy generated in ${processingTime}ms`);
-
-    // Return successful response
-    const response: FinanceStrategyResponse = {
-      success: true,
-      strategy,
-      generatedAt: new Date().toISOString(),
-      processingTime,
-    };
-
-    return NextResponse.json(response);
-
-  } catch (error) {
-    const processingTime = Date.now() - startTime;
-    console.error('❌ Finance strategy generation error:', error);
-
-    // Handle specific error types
-    let errorMessage = 'Failed to generate finance strategy';
-    let statusCode = 500;
-
-    if (error instanceof Error) {
-      if (error.message.includes('GEMINI_API_KEY')) {
-        errorMessage = 'AI service not configured';
-        statusCode = 503;
-      } else if (error.message.includes('rate limit')) {
-        errorMessage = 'AI service rate limit exceeded. Please try again in a moment.';
-        statusCode = 429;
-      } else if (error.message.includes('Invalid JSON')) {
-        errorMessage = 'AI generated invalid response. Please try again.';
-        statusCode = 500;
-      } else {
-        errorMessage = error.message;
+    if (!res.ok) {
+      // Forward backend error as-is (wrapped in JSON if needed)
+      if (isJson) {
+        return NextResponse.json(body, { status: res.status });
       }
+      return NextResponse.json({ error: String(body) }, { status: res.status });
     }
+
+    // Success – return exactly what the Python backend returned
+    return NextResponse.json(body, { status: res.status });
+  } catch (error: any) {
+    const duration = Date.now() - startTime;
+    console.error('❌ Error proxying to backend /api/generate:', error);
 
     return NextResponse.json(
       {
-        success: false,
-        error: errorMessage,
-        generatedAt: new Date().toISOString(),
-        processingTime,
+        error: 'Failed to reach FinIQ.ai backend service',
+        detail: error?.message || 'Unknown error',
+        processingTime: duration,
       },
-      { status: statusCode }
+      { status: 500 },
     );
   }
 }
 
-// Health check endpoint
+// Simple health check for this proxy route
 export async function GET() {
-  const hasApiKey = !!(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
-  
   return NextResponse.json({
     status: 'ok',
-    service: 'finance-strategy',
-    configured: hasApiKey,
+    service: 'finance-strategy-proxy',
     timestamp: new Date().toISOString(),
   });
 }
