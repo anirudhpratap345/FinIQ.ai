@@ -94,7 +94,7 @@ SCHEMA:
             logger.info("[CALL] Calling unified LLM client for idea understanding (schema-enforced)...")
             raw_text = llm_client.generate(
                 prompt,
-                temperature=0.3,
+                temperature=0.1,
                 max_output_tokens=1024,
                 schema_instruction=schema_instruction,
             )
