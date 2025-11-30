@@ -8,3 +8,4 @@ python-dotenv==1.0.0
 redis==5.0.7
 # Compatible with langchain-google-genai if present; works with our agents
 google-generativeai==0.8.5
+requests==2.32.3

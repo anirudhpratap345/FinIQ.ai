@@ -42,7 +42,7 @@ def test_funding_stage_agent():
     print("Testing FundingStageAgent")
     print("="*50)
     
-    agent = FundingStageAgent(api_key=os.getenv("GEMINI_API_KEY"))
+    agent = FundingStageAgent()
     result = agent.run(test_input, {})
     
     print("\n✓ Result:")
@@ -67,7 +67,7 @@ def test_raise_amount_agent():
         }
     }
     
-    agent = RaiseAmountAgent(api_key=os.getenv("GEMINI_API_KEY"))
+    agent = RaiseAmountAgent()
     result = agent.run(test_input, context)
     
     print("\n✓ Result:")
@@ -85,7 +85,7 @@ def test_full_chain():
     print("Testing Full Agent Chain")
     print("="*50)
     
-    chain = ChainManager(api_key=os.getenv("GEMINI_API_KEY"))
+    chain = ChainManager(api_key=os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
     result = chain.run(test_input)
     
     print("\n✓ Result:")

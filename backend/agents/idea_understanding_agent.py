@@ -4,14 +4,14 @@ Builds a structured profile of the startup idea that downstream agents can use.
 """
 
 import os
-import json 
+import json
 import re
 import logging
 from typing import Dict, Any
-import google.generativeai as genai
 
 from .base_agent import BaseAgent
 from utils.prompt_templates import PromptTemplates
+from utils.llm_client import llm_client
 
 logger = logging.getLogger(__name__)
 
@@ -33,15 +33,25 @@ class IdeaUnderstandingAgent(BaseAgent):
     """
 
     def __init__(self, api_key: str = None):
+        """
+        api_key is kept for backwards compatibility but is no longer used directly.
+        All LLM calls now go through utils.llm_client with automatic provider failover.
+        """
         super().__init__()
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-        if not self.api_key:
-            raise ValueError("GEMINI_API_KEY or GOOGLE_API_KEY not found in environment")
-
-        genai.configure(api_key=self.api_key)
-        # Use gemini-1.5-flash instead of 2.0-flash-exp to avoid quota issues
-        self.model = genai.GenerativeModel("gemini-1.5-flash")
-        logger.info(f"[INIT] {self.name} ready with gemini-1.5-flash")
+        # We still enforce that at least one provider is configured for clarity.
+        if not (
+            os.getenv("GROQ_API_KEY")
+            or os.getenv("DEEPSEEK_API_KEY")
+            or os.getenv("OPENROUTER_API_KEY")
+            or os.getenv("GEMINI_API_KEY")
+            or os.getenv("GOOGLE_API_KEY")
+        ):
+            raise ValueError(
+                "No LLM providers configured. "
+                "Set at least one of GROQ_API_KEY, DEEPSEEK_API_KEY, "
+                "OPENROUTER_API_KEY, GEMINI_API_KEY, or GOOGLE_API_KEY."
+            )
+        logger.info(f"[INIT] {self.name} ready with unified LLM client")
 
     def get_description(self) -> str:
         return "Understands the startup idea and derives a structured domain/economic profile"
@@ -60,20 +70,17 @@ class IdeaUnderstandingAgent(BaseAgent):
         try:
             prompt = PromptTemplates.idea_understanding_agent(input_data)
 
-            logger.info(f"[CALL] Calling Gemini API for idea understanding...")
-            response = self.model.generate_content(
+            logger.info("[CALL] Calling unified LLM client for idea understanding...")
+            raw_text = llm_client.generate(
                 prompt,
-                generation_config={
-                    "temperature": 0.3,
-                    "top_p": 0.8,
-                    "max_output_tokens": 1024,
-                },
+                temperature=0.3,
+                max_output_tokens=1024,
             )
 
             # Log raw response BEFORE parsing
-            logger.info(f"[RAW RESPONSE] {response.text[:500]}...")
+            logger.info(f"[RAW RESPONSE] {raw_text[:500]}...")
             
-            result = self._parse_response(response.text, input_data)
+            result = self._parse_response(raw_text, input_data)
             
             logger.info(f"[OUTPUT] Successfully parsed idea profile: category={result.get('category')}, confidence={result.get('confidence')}")
             self.log_output(result)

@@ -7,10 +7,10 @@ import os
 import json
 import logging
 from typing import Dict, Any
-import google.generativeai as genai
 
 from .base_agent import BaseAgent
 from utils.prompt_templates import PromptTemplates
+from utils.llm_client import llm_client
 
 logger = logging.getLogger(__name__)
 
@@ -25,14 +25,23 @@ class FinancialPriorityAgent(BaseAgent):
     """
     
     def __init__(self, api_key: str = None):
+        """
+        All LLM calls now go through utils.llm_client with automatic provider failover.
+        """
         super().__init__()
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-        if not self.api_key:
-            raise ValueError("GEMINI_API_KEY or GOOGLE_API_KEY not found in environment")
-        
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
-        logger.info(f"[INIT] {self.name} ready")
+        if not (
+            os.getenv("GROQ_API_KEY")
+            or os.getenv("DEEPSEEK_API_KEY")
+            or os.getenv("OPENROUTER_API_KEY")
+            or os.getenv("GEMINI_API_KEY")
+            or os.getenv("GOOGLE_API_KEY")
+        ):
+            raise ValueError(
+                "No LLM providers configured. "
+                "Set at least one of GROQ_API_KEY, DEEPSEEK_API_KEY, "
+                "OPENROUTER_API_KEY, GEMINI_API_KEY, or GOOGLE_API_KEY."
+            )
+        logger.info(f"[INIT] {self.name} ready with unified LLM client")
     
     def get_description(self) -> str:
         return "Synthesizes all analysis to define top financial priorities"
@@ -68,17 +77,14 @@ class FinancialPriorityAgent(BaseAgent):
             
             prompt = PromptTemplates.financial_priority_agent(input_data, context_summary)
             
-            logger.info(f"[CALL] Calling Gemini API...")
-            response = self.model.generate_content(
+            logger.info("[CALL] Calling unified LLM client...")
+            raw_text = llm_client.generate(
                 prompt,
-                generation_config={
-                    "temperature": 0.6,
-                    "top_p": 0.9,
-                    "max_output_tokens": 2048,
-                }
+                temperature=0.6,
+                max_output_tokens=2048,
             )
             
-            result = self._parse_response(response.text)
+            result = self._parse_response(raw_text)
             logger.info(f"[OUTPUT] Generated {len(result.get('priorities', []))} financial priorities")
             self.log_output(result)
             return result
