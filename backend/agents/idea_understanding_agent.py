@@ -4,7 +4,7 @@ Builds a structured profile of the startup idea that downstream agents can use.
 """
 
 import os
-import json
+import json 
 import re
 import logging
 from typing import Dict, Any
@@ -39,8 +39,9 @@ class IdeaUnderstandingAgent(BaseAgent):
             raise ValueError("GEMINI_API_KEY or GOOGLE_API_KEY not found in environment")
 
         genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel("gemini-2.0-flash-exp")
-        logger.info(f"[INIT] {self.name} ready")
+        # Use gemini-1.5-flash instead of 2.0-flash-exp to avoid quota issues
+        self.model = genai.GenerativeModel("gemini-1.5-flash")
+        logger.info(f"[INIT] {self.name} ready with gemini-1.5-flash")
 
     def get_description(self) -> str:
         return "Understands the startup idea and derives a structured domain/economic profile"
@@ -77,7 +78,7 @@ class IdeaUnderstandingAgent(BaseAgent):
             logger.info(f"[OUTPUT] Successfully parsed idea profile: category={result.get('category')}, confidence={result.get('confidence')}")
             self.log_output(result)
             return result
-
+ 
         except Exception as e:
             logger.error(f"[ERROR] {self.name} failed with exception: {str(e)}")
             logger.error(f"[FALLBACK] Using heuristic-based fallback profile")

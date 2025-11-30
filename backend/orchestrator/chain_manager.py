@@ -16,6 +16,7 @@ from agents import (
     IdeaUnderstandingAgent,
 )
 from utils import validate_startup_input, input_to_dict
+from utils.cache import compute_hash, cache_get, cache_set
 
 logging.basicConfig(
     level=logging.INFO,
@@ -74,7 +75,7 @@ class ChainManager:
             raw_input: Raw startup input from frontend
             
         Returns:
-            Consolidated financial strategy report
+            Consolidated financial strategy report with 'cached' metadata
         """
         start_time = datetime.now()
         logger.info("\n" + "=" * 70)
@@ -103,6 +104,27 @@ class ChainManager:
 
             logger.info(f"[OK] Input validated for: {input_dict['startupName']}")
             
+            # Step 1.5: Check cache before executing agents
+            logger.info("\n[CACHE CHECK] Computing cache key...")
+            cache_key = compute_hash(input_dict)
+            cached_result = cache_get(cache_key)
+            
+            if cached_result:
+                # Cache hit - return immediately without calling agents
+                execution_time = (datetime.now() - start_time).total_seconds()
+                logger.info(f"[CACHE HIT] ⚡ Returning cached result in {execution_time:.3f}s")
+                logger.info("=" * 70)
+                
+                # Add metadata to indicate this is cached
+                cached_result["metadata"] = cached_result.get("metadata", {})
+                cached_result["metadata"]["cached"] = True
+                cached_result["metadata"]["cache_retrieval_time_seconds"] = execution_time
+                cached_result["metadata"]["original_execution_time_seconds"] = cached_result["metadata"].get("execution_time_seconds", 0)
+                
+                return cached_result
+            
+            logger.info("[CACHE MISS] No cached result found, executing agent chain...")
+            
             # Step 2: Execute agent chain
             logger.info("\n[STEP 2] Executing agent chain...")
             self.context = {"input": input_dict}
@@ -120,9 +142,30 @@ class ChainManager:
 
                     # Make idea understanding profile available to all downstream agents
                     if agent_key == "idea_understanding":
-                        self.context["idea_profile"] = agent_output
-                        # Also attach to input dict so prompt templates can see it
-                        input_dict["ideaProfile"] = agent_output
+                        if agent_output and "error" not in agent_output:
+                            self.context["idea_profile"] = agent_output
+                            # Also attach to input dict so prompt templates can see it
+                            input_dict["ideaProfile"] = agent_output
+                            logger.info(f"[CONTEXT] Idea profile successfully stored with keys: {list(agent_output.keys())}")
+                        else:
+                            logger.warning(f"[CONTEXT] IdeaUnderstandingAgent returned error or empty output, using fallback for downstream agents")
+                            # Set a minimal fallback profile so downstream agents don't fail
+                            fallback_profile = {
+                                "category": "General",
+                                "business_model": "Not specified",
+                                "capital_intensity": "Medium",
+                                "burn_profile": "Medium",
+                                "hardware_dependency": "Medium",
+                                "operational_complexity": "Medium",
+                                "regulation_risk": "Medium",
+                                "scalability_model": "Standard",
+                                "margin_profile": "Medium",
+                                "team_requirements": [],
+                                "confidence": "low",
+                                "notes": "Fallback profile due to IdeaUnderstandingAgent failure"
+                            }
+                            self.context["idea_profile"] = fallback_profile
+                            input_dict["ideaProfile"] = fallback_profile
                     
                     # Log execution
                     self.execution_log.append({
@@ -136,6 +179,7 @@ class ChainManager:
                     
                 except Exception as e:
                     logger.error(f"[FAIL] {agent.name} failed: {str(e)}")
+                    logger.error(f"[TRACEBACK] Full error: ", exc_info=True)
                     
                     # Log failure
                     self.execution_log.append({
@@ -145,8 +189,29 @@ class ChainManager:
                         "error": str(e)
                     })
                     
-                    # Continue with next agent (graceful degradation)
+                    # Store error in context
+                    agent_key = self._get_agent_key(agent.name)
                     self.context[agent_key] = {"error": str(e)}
+                    
+                    # If IdeaUnderstandingAgent fails, provide fallback profile
+                    if agent_key == "idea_understanding":
+                        logger.warning(f"[FALLBACK] IdeaUnderstandingAgent failed, providing minimal profile for downstream agents")
+                        fallback_profile = {
+                            "category": "General",
+                            "business_model": "Not specified",
+                            "capital_intensity": "Medium",
+                            "burn_profile": "Medium",
+                            "hardware_dependency": "Medium",
+                            "operational_complexity": "Medium",
+                            "regulation_risk": "Medium",
+                            "scalability_model": "Standard",
+                            "margin_profile": "Medium",
+                            "team_requirements": [],
+                            "confidence": "low",
+                            "notes": f"Fallback profile: {str(e)}"
+                        }
+                        self.context["idea_profile"] = fallback_profile
+                        input_dict["ideaProfile"] = fallback_profile
             
             # Step 3: Build consolidated output
             logger.info("\n[STEP 3] Building consolidated report...")
@@ -158,10 +223,22 @@ class ChainManager:
                 "execution_time_seconds": execution_time,
                 "timestamp": datetime.now().isoformat(),
                 "agents_executed": len(self.agents),
-                "execution_log": self.execution_log
+                "execution_log": self.execution_log,
+                "cached": False  # This is a fresh execution
             }
             
             logger.info(f"[COMPLETE] Analysis complete in {execution_time:.2f}s")
+            
+            # Step 4: Store result in cache for future requests
+            logger.info("\n[STEP 4] Storing result in cache...")
+            cache_ttl = 3600  # 1 hour TTL (can be configured via env)
+            cache_success = cache_set(cache_key, output, ttl=cache_ttl)
+            
+            if cache_success:
+                logger.info(f"[CACHE STORE] ✓ Result cached successfully (TTL: {cache_ttl}s)")
+            else:
+                logger.warning("[CACHE STORE] ✗ Failed to cache result (execution still successful)")
+            
             logger.info("=" * 70)
             
             return output

@@ -7,9 +7,14 @@ import logging
 from dotenv import load_dotenv
 
 from orchestrator import ChainManager
+from utils.cache import get_cache_stats, cache_clear
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
+# Setup logging with more detail
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 logger = logging.getLogger(__name__)
 
 # Load env from .env.local or .env
@@ -164,6 +169,52 @@ async def generate(req: GenerateRequest):
 @app.get("/api/health")
 async def health():
 	return {"status": "ok"}
+
+@app.get("/api/debug/last-run")
+async def debug_last_run():
+	"""Get the execution log from the last chain run for debugging"""
+	return {
+		"execution_log": chain_manager.get_execution_log(),
+		"context_keys": list(chain_manager.get_context().keys()),
+		"has_idea_profile": "idea_profile" in chain_manager.get_context()
+	}
+
+@app.get("/api/cache/stats")
+async def cache_stats():
+	"""
+	Get cache statistics and health status.
+	Useful for monitoring cache performance.
+	"""
+	try:
+		stats = get_cache_stats()
+		return {
+			"success": True,
+			"stats": stats
+		}
+	except Exception as e:
+		logger.error(f"[ERROR] Failed to get cache stats: {e}")
+		return {
+			"success": False,
+			"error": str(e)
+		}
+
+@app.post("/api/cache/clear")
+async def clear_cache():
+	"""
+	Clear all cached strategies.
+	Use this after updating prompt templates or agent logic.
+	"""
+	try:
+		cleared_count = cache_clear()
+		logger.info(f"[CACHE] Cleared {cleared_count} cache entries via API")
+		return {
+			"success": True,
+			"cleared": cleared_count,
+			"message": f"Successfully cleared {cleared_count} cache entries"
+		}
+	except Exception as e:
+		logger.error(f"[ERROR] Failed to clear cache: {e}")
+		raise HTTPException(status_code=500, detail=f"Failed to clear cache: {str(e)}")
 
 @app.get("/")
 async def root():

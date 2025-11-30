@@ -40,6 +40,9 @@ yarn-error.log*
 /backend/**/__pycache__/
 *.pyc
 
+# backend cache directory (file-based cache)
+/backend/cache/
+
 # vercel
 .vercel
 
