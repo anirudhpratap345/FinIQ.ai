@@ -70,11 +70,33 @@ class IdeaUnderstandingAgent(BaseAgent):
         try:
             prompt = PromptTemplates.idea_understanding_agent(input_data)
 
-            logger.info("[CALL] Calling unified LLM client for idea understanding...")
+            # Strong schema enforcement for idea_profile JSON
+            schema_instruction = """
+CRITICAL: Output ONLY a valid JSON object matching this EXACT schema. No other text, no markdown (no ```json), no explanations. Use ALL details from the input to derive precise, non-generic values. If uncertain, explain briefly in "notes" but NEVER use defaults like "Medium" without rationale.
+
+SCHEMA:
+{
+  "category": "string (precise sub-industry, e.g., 'PropTech FinTech', not 'General')",
+  "business_model": "string (specific, e.g., 'Per-shipment + subscription')",
+  "capital_intensity": "string (Low/Medium/High/Very High, justified by hardware/logistics needs)",
+  "burn_profile": "string (Low/Medium/High, based on ops/compliance burn)",
+  "hardware_dependency": "string (Low/Medium/High, e.g., High for IoT sensors/dewars)",
+  "operational_complexity": "string (Low/Medium/High, factoring regulation/partnerships)",
+  "regulation_risk": "string (Low/Medium/High/Very High, e.g., Very High for FDA/pharma shipping)",
+  "scalability_model": "string (brief, e.g., 'Network effects via pharma partnerships')",
+  "margin_profile": "string (Low/Medium/High, e.g., High post-scale due to recurring fees)",
+  "team_requirements": "array of strings (3-5 key roles, e.g., ['Chief Quality Officer', 'Logistics Engineer'])",
+  "confidence": "string (low/medium/high, high if input is detailed)",
+  "notes": "string (1-2 sentences on key risks/opportunities)"
+}
+"""
+
+            logger.info("[CALL] Calling unified LLM client for idea understanding (schema-enforced)...")
             raw_text = llm_client.generate(
                 prompt,
                 temperature=0.3,
                 max_output_tokens=1024,
+                schema_instruction=schema_instruction,
             )
 
             # Log raw response BEFORE parsing

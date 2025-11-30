@@ -80,6 +80,8 @@ class LLMClient:
         *,
         temperature: float = 0.3,
         max_output_tokens: int = 1024,
+        system_msg: Optional[str] = None,
+        schema_instruction: Optional[str] = None,
     ) -> str:
         """
         Generate a completion for the given prompt using the first available provider.
@@ -91,6 +93,19 @@ class LLMClient:
             RuntimeError if all providers fail or none are configured.
         """
         last_error: Optional[Exception] = None
+
+        # Base system message – can be overridden per-call if needed
+        base_system_msg = (
+            system_msg
+            or "You are a precise JSON-generating assistant. "
+               "Always return ONLY valid JSON, no markdown or commentary."
+        )
+
+        # If a schema is provided, append it to the system message so the model
+        # is forced to match it exactly.
+        full_system_msg = (
+            base_system_msg + ("\n" + schema_instruction if schema_instruction else "")
+        )
 
         # Provider order: Groq → DeepSeek → OpenRouter → Gemini
         providers: list[tuple[str, Callable[..., str]]] = [
@@ -114,7 +129,12 @@ class LLMClient:
                     continue
 
                 logger.info(f"[LLM] Trying provider: {name}")
-                text = fn(prompt, temperature=temperature, max_tokens=max_output_tokens)
+                text = fn(
+                    prompt,
+                    system_msg=full_system_msg,
+                    temperature=temperature,
+                    max_tokens=max_output_tokens,
+                )
                 if text and isinstance(text, str) and text.strip():
                     logger.info(f"[LLM] Provider {name} succeeded")
                     return text
@@ -139,7 +159,14 @@ class LLMClient:
             return bool(self.gemini_api_key and genai is not None)
         return False
 
-    def _call_groq(self, prompt: str, *, temperature: float, max_tokens: int) -> str:
+    def _call_groq(
+        self,
+        prompt: str,
+        *,
+        system_msg: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> str:
         """
         Call Groq's OpenAI-compatible chat completions API.
         Docs: https://console.groq.com/docs/openai
@@ -155,11 +182,7 @@ class LLMClient:
         payload = {
             "model": self.groq_model,
             "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a precise JSON-generating assistant. "
-                               "Always return ONLY valid JSON, no markdown or commentary.",
-                },
+                {"role": "system", "content": system_msg},
                 {"role": "user", "content": prompt},
             ],
             "temperature": temperature,
@@ -180,7 +203,14 @@ class LLMClient:
             raise RuntimeError("Groq returned empty content")
         return content
 
-    def _call_deepseek(self, prompt: str, *, temperature: float, max_tokens: int) -> str:
+    def _call_deepseek(
+        self,
+        prompt: str,
+        *,
+        system_msg: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> str:
         """
         Call DeepSeek chat completions API.
         Docs: https://platform.deepseek.com/api-docs
@@ -196,11 +226,7 @@ class LLMClient:
         payload = {
             "model": self.deepseek_model,
             "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a precise JSON-generating assistant. "
-                               "Always return ONLY valid JSON, no markdown or commentary.",
-                },
+                {"role": "system", "content": system_msg},
                 {"role": "user", "content": prompt},
             ],
             "temperature": temperature,
@@ -221,7 +247,14 @@ class LLMClient:
             raise RuntimeError("DeepSeek returned empty content")
         return content
 
-    def _call_openrouter(self, prompt: str, *, temperature: float, max_tokens: int) -> str:
+    def _call_openrouter(
+        self,
+        prompt: str,
+        *,
+        system_msg: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> str:
         """
         Call OpenRouter chat completions API.
         Docs: https://openrouter.ai/docs
@@ -240,11 +273,7 @@ class LLMClient:
         payload = {
             "model": self.openrouter_model,
             "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a precise JSON-generating assistant. "
-                               "Always return ONLY valid JSON, no markdown or commentary.",
-                },
+                {"role": "system", "content": system_msg},
                 {"role": "user", "content": prompt},
             ],
             "temperature": temperature,
@@ -265,7 +294,14 @@ class LLMClient:
             raise RuntimeError("OpenRouter returned empty content")
         return content
 
-    def _call_gemini(self, prompt: str, *, temperature: float, max_tokens: int) -> str:
+    def _call_gemini(
+        self,
+        prompt: str,
+        *,
+        system_msg: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> str:
         """
         Call Gemini as a last-resort fallback.
         Uses the same API as before but centralized here.
@@ -278,8 +314,12 @@ class LLMClient:
             self._gemini_model = genai.GenerativeModel(self.gemini_model_name)
             logger.info(f"[LLM] Gemini model initialised: {self.gemini_model_name}")
 
+        # Gemini doesn't use chat messages in the same way; we prepend the
+        # system/schema instructions into the prompt.
+        full_prompt = system_msg + "\n\n" + prompt
+
         response = self._gemini_model.generate_content(
-            prompt,
+            full_prompt,
             generation_config={
                 "temperature": temperature,
                 "top_p": 0.8,
