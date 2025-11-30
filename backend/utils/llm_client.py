@@ -30,6 +30,9 @@ except ImportError:  # pragma: no cover - handled at runtime
 
 logger = logging.getLogger(__name__)
 
+# Optional hard override for a single provider, e.g. FORCE_LLM_MODEL=groq
+FORCE_MODEL = os.getenv("FORCE_LLM_MODEL")
+
 
 class LLMClient:
     def __init__(self) -> None:
@@ -96,6 +99,14 @@ class LLMClient:
             ("openrouter", self._call_openrouter),
             ("gemini", self._call_gemini),
         ]
+
+        # Optional hard override to a single provider (no failover)
+        if FORCE_MODEL:
+            forced = FORCE_MODEL.lower().strip()
+            forced_list = [(name, fn) for name, fn in providers if name == forced]
+            if forced_list:
+                providers = forced_list
+                logger.info(f"[LLM] FORCE MODE: Using only provider '{forced}' (no failover)")
 
         for name, fn in providers:
             try:
