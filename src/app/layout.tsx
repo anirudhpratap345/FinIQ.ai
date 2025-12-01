@@ -21,16 +21,27 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "FinIQ – Your Free AI VC",
   description: "Your AI VC Partner. Tells you exactly how much to raise, from whom, and what to fix first — in 30 seconds. No login. 5 free runs. Zero fluff.",
+  metadataBase: new URL("https://www.finiq.live"),
   openGraph: {
     title: "FinIQ – Your Free AI VC",
-    description: "Your AI VC Partner. Get your funding strategy in 30 seconds. Built by a 21-year-old who got rejected by every accelerator.",
+    description: "Your AI VC Partner. Tells you exactly how much to raise, from whom, and what to fix first — in 30 seconds.",
     type: "website",
     siteName: "FinIQ",
+    url: "https://www.finiq.live",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "FinIQ – Your Free AI VC",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "FinIQ – Your Free AI VC",
     description: "Your AI VC Partner. Tells you exactly how much to raise, from whom, and what to fix first — in 30 seconds.",
+    images: ["/og-image.png"],
   },
 };
 
