@@ -39,11 +39,6 @@ export default function Navbar() {
             <Link href="/finance-copilot" className="underline-soft nav-link text-gray-300 hover:text-white transition-colors">Get Strategy</Link>
         </nav>
 
-          <div className="hidden md:flex items-center gap-2">
-            <Link href="/auth/signin" className="rounded-full border border-white/20 px-4 py-1.5 text-sm text-white hover:bg-white hover:text-black transition">
-              Sign In
-            </Link>
-          </div>
 
           <button aria-label="Menu" className="lg:hidden text-white ml-auto md:ml-0" onClick={() => setOpen(v => !v)}>
             {open ? <X className="h-6 w-6"/> : <Menu className="h-6 w-6"/>}
@@ -62,6 +57,7 @@ export default function Navbar() {
           >
             <div className="glass rounded-xl p-4 space-y-3 border border-white/10">
               <a href="#features" className="block text-gray-200" onClick={() => setOpen(false)}>Features</a>
+              <a href="#how-it-works" className="block text-gray-200" onClick={() => setOpen(false)}>How it works</a>
               <Link href="/finance-copilot" className="block text-gray-200" onClick={() => setOpen(false)}>Get Strategy</Link>
             </div>
           </motion.div>
