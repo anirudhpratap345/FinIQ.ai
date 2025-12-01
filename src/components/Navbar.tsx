@@ -18,7 +18,8 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const sectionIds = ["features", "how-it-works"];
+  // Only track "how-it-works" section on homepage
+  const sectionIds = ["how-it-works"];
   const active = useScrollSpy(sectionIds);
   const pathname = usePathname();
   const isHome = pathname === "/";
