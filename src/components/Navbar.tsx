@@ -30,7 +30,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-center">
         <div className={`nav-pill ${scrolled ? "nav-pill--scrolled" : ""} flex items-center justify-between gap-4 md:gap-8 px-4 md:px-6 py-2 w-[min(100%,1000px)] mx-auto`}>
           <Link href="/" className="text-white font-semibold text-base md:text-lg tracking-tight">
-            FinIQ.ai
+            FinIQ
           </Link>
 
           <nav className="hidden lg:flex items-center gap-6 text-sm">

@@ -8,8 +8,8 @@ export default function SiteFooter() {
       <div className="container mx-auto px-6">
         <div className="flex flex-col items-center justify-center gap-4 text-center">
           <div>
-            <div className="text-white font-bold text-lg mb-2">FinIQ.ai</div>
-            <div className="text-gray-400 text-sm">© {new Date().getFullYear()} FinIQ.ai. All rights reserved.</div>
+            <div className="text-white font-bold text-lg mb-2">FinIQ</div>
+            <div className="text-gray-400 text-sm">© {new Date().getFullYear()} FinIQ. All rights reserved.</div>
           </div>
           <nav className="flex flex-wrap items-center justify-center gap-6 text-gray-300">
             <Link href="/finance-copilot" className="hover:text-white">Get Strategy</Link>

@@ -106,7 +106,7 @@ function FinanceCopilotContent() {
         const msg =
           typeof res.error === 'string'
             ? res.error
-            : 'Unable to reach the FinIQ.ai backend. Please check that the service is running and try again.';
+            : 'Unable to reach the FinIQ backend. Please check that the service is running and try again.';
         setError(msg);
         return;
       }
@@ -154,7 +154,7 @@ function FinanceCopilotContent() {
         className="text-center mb-12"
       >
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-          FinIQ.ai
+          FinIQ
         </h1>
         <p className="text-lg text-white/60 max-w-2xl mx-auto">
           Get personalized funding recommendations powered by AI. 

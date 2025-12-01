@@ -67,7 +67,7 @@ export default function ComparisonCarousel() {
     >
       <div className="text-center mb-8">
         <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
-          Generic AI vs. <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">FinIQ.ai</span>
+          Generic AI vs. <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">FinIQ</span>
         </h3>
         <p className="text-gray-400">See the difference domain-aware analysis makes</p>
       </div>
@@ -129,7 +129,7 @@ export default function ComparisonCarousel() {
             <div className="relative rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-950/20 to-black/40 p-6 backdrop-blur-sm">
               <div className="absolute -top-3 left-4 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-medium flex items-center gap-1.5">
                 <Check className="h-3 w-3" />
-                FinIQ.ai
+                FinIQ
               </div>
               
               <div className="flex items-center gap-3 mb-4 mt-2">

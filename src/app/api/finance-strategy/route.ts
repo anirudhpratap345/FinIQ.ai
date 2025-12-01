@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        error: 'Failed to reach FinIQ.ai backend service',
+        error: 'Failed to reach FinIQ backend service',
         detail: error?.message || 'Unknown error',
         processingTime: duration,
       },
