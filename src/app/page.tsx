@@ -58,17 +58,6 @@ export default function Home() {
             and what to fix first — <span className="text-white font-semibold">in 30 seconds.</span>
           </motion.p>
           
-          {/* Story Subheadline */}
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
-            className="text-base text-gray-500 mb-12 max-w-2xl mx-auto italic"
-          >
-            &quot;I got tired of generic $1-2M Seed advice.<br />
-            So I built the VC that never sleeps.&quot; — <span className="text-gray-400 not-italic">21yo indie from India</span>
-          </motion.p>
-          
           {/* Giant Pulsing CTA */}
           <div className="mb-10">
             <PulsingCTA href="/finance-copilot" size="large">
