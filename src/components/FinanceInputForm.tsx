@@ -255,10 +255,23 @@ export default function FinanceInputForm({ onSubmit, isLoading, initialValues }:
                 </Label>
                 <Input
                   id="teamSize"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   min="1"
-                  value={inputs.teamSize}
-                  onChange={(e) => setInputs({ ...inputs, teamSize: parseInt(e.target.value) || 1 })}
+                  value={inputs.teamSize === 0 ? '' : inputs.teamSize}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '' || /^\d+$/.test(val)) {
+                      setInputs({ ...inputs, teamSize: val === '' ? 0 : parseInt(val, 10) });
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // Ensure minimum value of 1 on blur
+                    if (!e.target.value || parseInt(e.target.value, 10) < 1) {
+                      setInputs({ ...inputs, teamSize: 1 });
+                    }
+                  }}
                   className="mt-1.5 bg-white/5 border-white/10 text-white"
                 />
               </div>
@@ -295,10 +308,17 @@ export default function FinanceInputForm({ onSubmit, isLoading, initialValues }:
                 </Label>
                 <Input
                   id="monthlyRevenue"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   min="0"
-                  value={inputs.monthlyRevenue || ''}
-                  onChange={(e) => setInputs({ ...inputs, monthlyRevenue: e.target.value ? parseInt(e.target.value) : undefined })}
+                  value={inputs.monthlyRevenue ?? ''}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '' || /^\d+$/.test(val)) {
+                      setInputs({ ...inputs, monthlyRevenue: val === '' ? undefined : parseInt(val, 10) });
+                    }
+                  }}
                   placeholder="Leave empty if pre-revenue"
                   className="mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-white/40"
                 />
@@ -358,10 +378,17 @@ export default function FinanceInputForm({ onSubmit, isLoading, initialValues }:
               </Label>
               <Input
                 id="fundingGoal"
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 min="0"
-                value={inputs.fundingGoal || ''}
-                onChange={(e) => setInputs({ ...inputs, fundingGoal: e.target.value ? parseInt(e.target.value) : undefined })}
+                value={inputs.fundingGoal ?? ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '' || /^\d+$/.test(val)) {
+                    setInputs({ ...inputs, fundingGoal: val === '' ? undefined : parseInt(val, 10) });
+                  }
+                }}
                 placeholder="e.g., 500000 for $500K"
                 className="mt-1.5 bg-white/5 border-white/10 text-white placeholder:text-white/40"
               />
