@@ -1,84 +1,41 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import AnimatedBackground from "@/components/AnimatedBackground";
-import HowItWorksModal from "@/components/HowItWorksModal";
-import LiveCounters from "@/components/LiveCounters";
 import ComparisonCarousel from "@/components/ComparisonCarousel";
 import AnimatedFlow from "@/components/AnimatedFlow";
-import PulsingCTA from "@/components/PulsingCTA";
 import ShowcaseCards from "@/components/ShowcaseCards";
-import { Play } from "lucide-react";
 
 export default function Home() {
-  const [howOpen, setHowOpen] = useState(false);
-
   return (
     <div className="min-h-screen relative overflow-hidden">
       <AnimatedBackground />
       <div className="absolute inset-0 bg-[#0d1117] opacity-95" />
       
       {/* Hero Section */}
-      <section className="relative z-10 container mx-auto px-6 pt-28 pb-16">
-        <div className="text-center max-w-5xl mx-auto">
-          {/* Live Badge */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500/10 to-blue-500/10 border border-emerald-500/20 mb-10"
-          >
-            <motion.div 
-              animate={{ scale: [1, 1.3, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-2 h-2 bg-emerald-400 rounded-full"
-            />
-            <span className="text-sm text-emerald-400 font-medium">Live — 1,247+ founders this week</span>
-          </motion.div>
-          
-          {/* Main Headline */}
-          <motion.h1 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-5xl md:text-7xl font-bold text-white mb-6 leading-[1.1] tracking-tight"
-          >
+      <section className="relative z-10 container mx-auto px-6">
+        <div className="text-center max-w-4xl mx-auto pt-32 pb-20">
+          <h1 className="text-5xl md:text-6xl font-light text-white leading-tight">
             Your AI VC Partner
-          </motion.h1>
+          </h1>
           
-          {/* Subheadline - Benefit */}
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="text-xl md:text-2xl text-gray-300 mb-6 max-w-3xl mx-auto leading-relaxed"
-          >
-            Tells you exactly how much to raise, from whom,<br className="hidden md:block" />
-            and what to fix first — <span className="text-white font-semibold">in 30 seconds.</span>
-          </motion.p>
-          
-          {/* Giant Pulsing CTA */}
-          <div className="mb-10">
-            <PulsingCTA href="/finance-copilot" size="large">
-              Get My Free Strategy
-            </PulsingCTA>
+          <p className="text-xl md:text-2xl text-zinc-300 mt-8 leading-relaxed">
+            Tells you exactly how much to raise,<br className="hidden md:block" />
+            from whom, and what to fix first — in 30 seconds.
+          </p>
+
+          <div className="mt-12">
+            <Link href="/finance-copilot">
+              <button className="px-10 py-5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-full text-white text-lg font-medium shadow-2xl shadow-cyan-500/30 transition-all transform hover:scale-105">
+                Get My Free Strategy
+              </button>
+            </Link>
           </div>
-          
-          {/* Watch Demo Link */}
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 1.1 }}
-            onClick={() => setHowOpen(true)}
-            className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm mb-12"
-          >
-            <Play className="h-4 w-4" />
-            Watch 30-second demo
-          </motion.button>
-          
-          {/* Live Trust Counters */}
-          <LiveCounters />
+
+          <p className="mt-20 text-zinc-500 text-sm">
+            Built on Groq Llama 3.3 70B + DeepSeek-R1 • Used by founders from YC, a16z & Sequoia portfolios
+          </p>
         </div>
       </section>
 
@@ -149,16 +106,16 @@ export default function Home() {
             
             {/* Secondary CTA */}
             <div className="mb-8">
-              <PulsingCTA href="/finance-copilot" size="large">
-                Get My Free Strategy
-              </PulsingCTA>
+              <Link href="/finance-copilot">
+                <button className="px-10 py-5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-full text-white text-lg font-medium shadow-2xl shadow-cyan-500/30 transition-all transform hover:scale-105">
+                  Get My Free Strategy
+                </button>
+              </Link>
             </div>
             
           </motion.div>
         </div>
       </section>
-
-      <HowItWorksModal open={howOpen} onClose={() => setHowOpen(false)} />
     </div>
   );
 }
