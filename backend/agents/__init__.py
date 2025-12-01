@@ -9,6 +9,7 @@ from .investor_type_agent import InvestorTypeAgent
 from .runway_agent import RunwayAgent
 from .financial_priority_agent import FinancialPriorityAgent
 from .idea_understanding_agent import IdeaUnderstandingAgent
+from .industry_specialist_agent import IndustrySpecialistAgent
 
 __all__ = [
     "FundingStageAgent",
@@ -17,5 +18,6 @@ __all__ = [
     "RunwayAgent",
     "FinancialPriorityAgent",
     "IdeaUnderstandingAgent",
+    "IndustrySpecialistAgent",
 ]
 

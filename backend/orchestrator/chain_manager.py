@@ -14,6 +14,7 @@ from agents import (
     RunwayAgent,
     FinancialPriorityAgent,
     IdeaUnderstandingAgent,
+    IndustrySpecialistAgent,
 )
 from utils import validate_startup_input, input_to_dict
 from utils.cache import compute_hash, cache_get, cache_set
@@ -53,9 +54,11 @@ class ChainManager:
         self.execution_log: List[Dict[str, Any]] = []
         
         # Initialize all agents
+        # Order: IdeaUnderstanding → IndustrySpecialist → FundingStage → RaiseAmount → InvestorType → Runway → FinancialPriority
         try:
             self.agents = [
                 IdeaUnderstandingAgent(api_key=api_key),
+                IndustrySpecialistAgent(api_key=api_key),  # NEW: Hyper-specific niche bullets
                 FundingStageAgent(api_key=api_key),
                 RaiseAmountAgent(api_key=api_key),
                 InvestorTypeAgent(api_key=api_key),
@@ -135,7 +138,7 @@ class ChainManager:
                 try:
                     # Run agent
                     agent_output = agent.run(input_dict, self.context)
-
+                    
                     # Store output in context
                     agent_key = self._get_agent_key(agent.name)
                     self.context[agent_key] = agent_output
@@ -166,6 +169,19 @@ class ChainManager:
                             }
                             self.context["idea_profile"] = fallback_profile
                             input_dict["ideaProfile"] = fallback_profile
+                    
+                    # Make industry specialist bullets available to all downstream agents
+                    if agent_key == "industry_specialist":
+                        if agent_output and "error" not in agent_output:
+                            self.context["industry_bullets"] = agent_output
+                            # Also attach to input dict so prompt templates can see it
+                            input_dict["industryBullets"] = agent_output
+                            bullets = agent_output.get("bullets", [])
+                            logger.info(f"[CONTEXT] Industry bullets stored: {len(bullets)} bullets for '{agent_output.get('industry_label', 'Unknown')}'")
+                        else:
+                            logger.warning(f"[CONTEXT] IndustrySpecialistAgent returned error or empty output")
+                            self.context["industry_bullets"] = {"bullets": [], "industry_label": "General", "confidence": "low"}
+                            input_dict["industryBullets"] = self.context["industry_bullets"]
                     
                     # Log execution
                     self.execution_log.append({
@@ -272,6 +288,7 @@ class ChainManager:
         return {
             "startup_name": self.context["input"]["startupName"],
             "idea_understanding": self.context.get("idea_understanding", {}),
+            "industry_specialist": self.context.get("industry_specialist", {}),
             "funding_stage": self.context.get("funding_stage", {}),
             "raise_amount": self.context.get("raise_amount", {}),
             "investor_type": self.context.get("investor_type", {}),
