@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FinanceInputForm from '@/components/FinanceInputForm';
@@ -12,7 +12,8 @@ import { postGenerate } from '@/lib/api';
 
 const DUPLICATE_KEY = 'finiq_duplicate_scenario';
 
-export default function FinanceCopilotPage() {
+// Inner component that uses useSearchParams - must be wrapped in Suspense
+function FinanceCopilotContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
@@ -145,6 +146,89 @@ export default function FinanceCopilotPage() {
   };
 
   return (
+    <>
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center mb-12"
+      >
+        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+          FinIQ.ai
+        </h1>
+        <p className="text-lg text-white/60 max-w-2xl mx-auto">
+          Get personalized funding recommendations powered by AI. 
+          Answer a few questions about your startup and receive a complete financial strategy.
+        </p>
+      </motion.div>
+
+      {/* Input Form */}
+      {!result && !trialExhausted && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          {/* Show hint when duplicating */}
+          {duplicateInputs && (
+            <div className="mb-6 px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-sm text-amber-400 text-center">
+              💡 Scenario loaded — change one field (like MRR or team size) and see how your strategy changes!
+            </div>
+          )}
+          <FinanceInputForm 
+            onSubmit={handleSubmit} 
+            isLoading={isLoading}
+            initialValues={duplicateInputs}
+          />
+        </motion.div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
+          <ErrorCard
+            message={error}
+            ctaLabel={'Try Again'}
+            onCta={handleReset}
+          />
+        </motion.div>
+      )}
+
+      {/* Loading State */}
+      {isLoading && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <LoadingState />
+        </motion.div>
+      )}
+
+      {/* Results */}
+      {result && !isLoading && (
+        <div id="results">
+          <ResponseViewer 
+            data={result} 
+            onReset={handleReset}
+            formInputs={lastInputs}
+            onDuplicate={handleDuplicate}
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
+// Loading fallback for Suspense
+function PageLoadingFallback() {
+  return (
+    <div className="text-center py-12">
+      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white/60" />
+      <p className="text-white/40 mt-4">Loading...</p>
+    </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function FinanceCopilotPage() {
+  return (
     <div className="min-h-screen bg-[#0d1117] relative overflow-hidden">
       {/* Background gradient */}
       <div className="fixed inset-0 bg-gradient-to-b from-black via-[#0d1117] to-black pointer-events-none" />
@@ -152,75 +236,11 @@ export default function FinanceCopilotPage() {
       {/* Content */}
       <div className="relative z-10 pt-28 pb-16 px-4">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
-          >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              FinIQ.ai
-            </h1>
-            <p className="text-lg text-white/60 max-w-2xl mx-auto">
-              Get personalized funding recommendations powered by AI. 
-              Answer a few questions about your startup and receive a complete financial strategy.
-            </p>
-          </motion.div>
-
-          {/* Input Form */}
-          {!result && !trialExhausted && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              {/* Show hint when duplicating */}
-              {duplicateInputs && (
-                <div className="mb-6 px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-sm text-amber-400 text-center">
-                  💡 Scenario loaded — change one field (like MRR or team size) and see how your strategy changes!
-                </div>
-              )}
-              <FinanceInputForm 
-                onSubmit={handleSubmit} 
-                isLoading={isLoading}
-                initialValues={duplicateInputs}
-              />
-            </motion.div>
-          )}
-
-          {/* Error Message */}
-          {error && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8">
-              <ErrorCard
-                message={error}
-                ctaLabel={'Try Again'}
-                onCta={handleReset}
-              />
-            </motion.div>
-          )}
-
-          {/* Loading State */}
-          {isLoading && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <LoadingState />
-            </motion.div>
-          )}
-
-          {/* Results */}
-          {result && !isLoading && (
-            <div id="results">
-              <ResponseViewer 
-                data={result} 
-                onReset={handleReset}
-                formInputs={lastInputs}
-                onDuplicate={handleDuplicate}
-              />
-            </div>
-          )}
-
+          <Suspense fallback={<PageLoadingFallback />}>
+            <FinanceCopilotContent />
+          </Suspense>
         </div>
       </div>
     </div>
   );
 }
-
