@@ -171,20 +171,6 @@ export default function FinanceCopilotPage() {
             </div>
           )}
 
-          {/* Info Footer */}
-          {!result && !isLoading && !trialExhausted && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="mt-12 text-center"
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs text-white/60">
-                <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-                Powered by Gemini 2.0 AI • 6 Specialized Agents
-              </div>
-            </motion.div>
-          )}
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ import LiveCounters from "@/components/LiveCounters";
 import ComparisonCarousel from "@/components/ComparisonCarousel";
 import AnimatedFlow from "@/components/AnimatedFlow";
 import PulsingCTA from "@/components/PulsingCTA";
+import ShowcaseCards from "@/components/ShowcaseCards";
 import { Play } from "lucide-react";
 
 export default function Home() {
@@ -116,6 +117,28 @@ export default function Home() {
           </motion.div>
           
           <AnimatedFlow />
+        </div>
+      </section>
+
+      {/* Real Output Showcase */}
+      <section className="relative z-10 py-20 px-6">
+        <div className="container mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Real outputs. Real startups.
+            </h3>
+            <p className="text-lg text-gray-400 max-w-xl mx-auto">
+              See what FinIQ generates for different industries — no cherry-picking.
+            </p>
+          </motion.div>
+          
+          <ShowcaseCards />
         </div>
       </section>
 
