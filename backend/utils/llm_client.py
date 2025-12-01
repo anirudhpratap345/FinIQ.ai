@@ -332,7 +332,27 @@ class LLMClient:
         return text
 
 
-# Singleton instance used by all agents
-llm_client = LLMClient()
+# Lazy singleton instance used by all agents
+# This ensures environment variables are loaded before instantiation
+_llm_client_instance: Optional[LLMClient] = None
+
+
+def get_llm_client() -> LLMClient:
+    """Get the singleton LLM client instance (lazy initialization)."""
+    global _llm_client_instance
+    if _llm_client_instance is None:
+        _llm_client_instance = LLMClient()
+    return _llm_client_instance
+
+
+# For backwards compatibility, create a proxy object
+class _LLMClientProxy:
+    """Proxy that lazily initializes the real LLM client on first use."""
+    
+    def __getattr__(self, name: str):
+        return getattr(get_llm_client(), name)
+
+
+llm_client = _LLMClientProxy()
 
 

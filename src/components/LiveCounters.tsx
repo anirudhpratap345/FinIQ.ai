@@ -1,29 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, Target, DollarSign } from "lucide-react";
 
-// Simulated base values - in production, fetch from API
-const BASE_VALUES = {
-  strategies: 1247,
-  accuracy: 87,
-  capital: 1.8,
-};
+interface Stats {
+  totalStrategies: number;
+  accuracyRating: number;
+  totalCapitalRecommended: string;
+  activeFounders?: number;
+}
 
 function AnimatedNumber({ value, suffix = "", prefix = "" }: { value: number; suffix?: string; prefix?: string }) {
   const [displayValue, setDisplayValue] = useState(0);
+  const prevValue = useRef(0);
   
   useEffect(() => {
-    const duration = 2000;
-    const steps = 60;
-    const increment = value / steps;
-    let current = 0;
+    const start = prevValue.current;
+    const end = value;
+    const duration = 1500;
+    const steps = 40;
+    const increment = (end - start) / steps;
+    let current = start;
+    let step = 0;
     
     const timer = setInterval(() => {
+      step++;
       current += increment;
-      if (current >= value) {
-        setDisplayValue(value);
+      if (step >= steps) {
+        setDisplayValue(end);
+        prevValue.current = end;
         clearInterval(timer);
       } else {
         setDisplayValue(Math.floor(current));
@@ -41,42 +47,58 @@ function AnimatedNumber({ value, suffix = "", prefix = "" }: { value: number; su
 }
 
 export default function LiveCounters() {
-  const [values, setValues] = useState(BASE_VALUES);
-  
-  // Simulate live updates every 5 seconds
+  const [stats, setStats] = useState<Stats>({
+    totalStrategies: 1247,
+    accuracyRating: 89,
+    totalCapitalRecommended: '1.8B',
+  });
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setValues(prev => ({
-        strategies: prev.strategies + Math.floor(Math.random() * 3),
-        accuracy: prev.accuracy, // Keep accuracy stable
-        capital: +(prev.capital + Math.random() * 0.01).toFixed(2),
-      }));
-    }, 5000);
-    
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/stats');
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+        }
+      } catch (error) {
+        console.error('Stats fetch error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+    // Update every 10 seconds for "live" feel
+    const interval = setInterval(fetchStats, 10000);
     return () => clearInterval(interval);
   }, []);
-  
+
   const counters = [
     {
       icon: TrendingUp,
-      value: values.strategies,
+      value: stats.totalStrategies,
       label: "strategies generated",
       suffix: "",
       prefix: "",
+      isNumber: true,
     },
     {
       icon: Target,
-      value: values.accuracy,
+      value: stats.accuracyRating,
       label: 'said "scary accurate"',
       suffix: "%",
       prefix: "",
+      isNumber: true,
     },
     {
       icon: DollarSign,
-      value: values.capital,
+      value: stats.totalCapitalRecommended,
       label: "total capital recommended",
-      suffix: "B+",
+      suffix: "+",
       prefix: "$",
+      isNumber: false,
     },
   ];
   
@@ -97,7 +119,11 @@ export default function LiveCounters() {
         >
           <counter.icon className="h-4 w-4 text-blue-400" />
           <span className="text-white font-semibold">
-            <AnimatedNumber value={counter.value} suffix={counter.suffix} prefix={counter.prefix} />
+            {counter.isNumber ? (
+              <AnimatedNumber value={counter.value as number} suffix={counter.suffix} prefix={counter.prefix} />
+            ) : (
+              <span>{counter.prefix}{counter.value}{counter.suffix}</span>
+            )}
           </span>
           <span>{counter.label}</span>
         </motion.div>

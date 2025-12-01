@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import FinanceInputForm from '@/components/FinanceInputForm';
 import LoadingState from '@/components/LoadingState';
@@ -9,12 +10,19 @@ import ResponseViewer from '@/components/ResponseViewer';
 import type { StartupInputs } from '@/types/finance-copilot';
 import { postGenerate } from '@/lib/api';
 
+const DUPLICATE_KEY = 'finiq_duplicate_scenario';
+
 export default function FinanceCopilotPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const [result, setResult] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [trialExhausted, setTrialExhausted] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [lastInputs, setLastInputs] = useState<StartupInputs | null>(null);
+  const [duplicateInputs, setDuplicateInputs] = useState<Partial<StartupInputs> | undefined>(undefined);
 
   // Initialize or fetch persistent user_id
   useEffect(() => {
@@ -30,6 +38,24 @@ export default function FinanceCopilotPage() {
       }
     } catch {}
   }, []);
+  
+  // Handle duplicate scenario from URL param
+  useEffect(() => {
+    if (searchParams.get('duplicate') === 'true') {
+      try {
+        const saved = sessionStorage.getItem(DUPLICATE_KEY);
+        if (saved) {
+          const data = JSON.parse(saved);
+          setDuplicateInputs(data);
+          sessionStorage.removeItem(DUPLICATE_KEY);
+          // Clean up URL
+          router.replace('/finance-copilot');
+        }
+      } catch (e) {
+        console.warn('Failed to restore duplicate scenario:', e);
+      }
+    }
+  }, [searchParams, router]);
 
   const buildPrompt = (i: StartupInputs) => {
     return [
@@ -55,6 +81,8 @@ export default function FinanceCopilotPage() {
     setError(null);
     setResult(null);
     setTrialExhausted(false);
+    setLastInputs(inputs); // Store for duplicate feature
+    setDuplicateInputs(undefined); // Clear duplicate inputs after submit
 
     try {
       const payload = {
@@ -95,6 +123,19 @@ export default function FinanceCopilotPage() {
       setIsLoading(false);
     }
   };
+  
+  // Handle duplicate scenario - saves inputs and scrolls to form
+  const handleDuplicate = (inputs: StartupInputs) => {
+    // Save to sessionStorage for persistence across page reload
+    try {
+      sessionStorage.setItem(DUPLICATE_KEY, JSON.stringify(inputs));
+    } catch {}
+    
+    // Reset state and show form with pre-filled values
+    setResult(null);
+    setDuplicateInputs(inputs);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleReset = () => {
     setResult(null);
@@ -133,7 +174,17 @@ export default function FinanceCopilotPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <FinanceInputForm onSubmit={handleSubmit} isLoading={isLoading} />
+              {/* Show hint when duplicating */}
+              {duplicateInputs && (
+                <div className="mb-6 px-4 py-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-sm text-amber-400 text-center">
+                  💡 Scenario loaded — change one field (like MRR or team size) and see how your strategy changes!
+                </div>
+              )}
+              <FinanceInputForm 
+                onSubmit={handleSubmit} 
+                isLoading={isLoading}
+                initialValues={duplicateInputs}
+              />
             </motion.div>
           )}
 
@@ -158,7 +209,12 @@ export default function FinanceCopilotPage() {
           {/* Results */}
           {result && !isLoading && (
             <div id="results">
-              <ResponseViewer data={result} onReset={handleReset} />
+              <ResponseViewer 
+                data={result} 
+                onReset={handleReset}
+                formInputs={lastInputs}
+                onDuplicate={handleDuplicate}
+              />
             </div>
           )}
 
