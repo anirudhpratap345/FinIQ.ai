@@ -94,7 +94,7 @@ export default function Home() {
       </section>
 
       {/* Comparison Carousel Section */}
-      <section id="features" className="relative z-10 py-20 px-6">
+      <section className="relative z-10 py-20 px-6">
         <ComparisonCarousel />
       </section>
 

@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import ComparisonCarousel from '@/components/ComparisonCarousel';
 
 interface Stats {
   totalStrategies: number;
@@ -129,8 +130,13 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* Real Output Showcase */}
+      {/* Comparison Carousel - Generic AI vs FinIQ */}
       <section className="py-16 px-6">
+        <ComparisonCarousel />
+      </section>
+
+      {/* Real Output Showcase */}
+      <section className="py-16 px-6 bg-[#0a0a0a]">
         <div className="max-w-6xl mx-auto">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
@@ -206,8 +212,8 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="py-16 px-6 bg-[#0a0a0a]">
+      {/* Features Grid - Under the Hood */}
+      <section className="py-16 px-6">
         <div className="max-w-5xl mx-auto">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
@@ -238,7 +244,7 @@ export default function FeaturesPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6 bg-[#0a0a0a]">
         <div className="max-w-2xl mx-auto text-center">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
@@ -276,4 +282,3 @@ export default function FeaturesPage() {
     </div>
   );
 }
-

@@ -22,6 +22,7 @@ export default function Navbar() {
   const active = useScrollSpy(sectionIds);
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const isFeatures = pathname === "/features";
 
   return (
     <header className={`fixed top-0 inset-x-0 z-40 transition-all ${scrolled ? "glass-subtle border-b border-white/10 backdrop-blur" : "bg-transparent"}`}>
@@ -32,21 +33,31 @@ export default function Navbar() {
           </Link>
 
           <nav className="hidden lg:flex items-center gap-6 text-sm">
+            {/* Features - always link to /features page */}
+            <Link 
+              href="/features" 
+              className={`underline-soft nav-link transition-colors ${isFeatures ? "text-white" : "text-gray-300 hover:text-white"}`}
+            >
+              Features
+            </Link>
+            {/* How it works - scroll on homepage, link to homepage section from other pages */}
             {isHome ? (
-              <a href="#features" aria-current={active==="features"?"page":undefined}
-                 className={`underline-soft nav-link transition-colors ${active==="features"?"text-white":"text-gray-300 hover:text-white"}`}>Features</a>
+              <a 
+                href="#how-it-works" 
+                aria-current={active === "how-it-works" ? "page" : undefined}
+                className={`underline-soft nav-link transition-colors ${active === "how-it-works" ? "text-white" : "text-gray-300 hover:text-white"}`}
+              >
+                How it works
+              </a>
             ) : (
-              <Link href="/features" className="underline-soft nav-link text-gray-300 hover:text-white transition-colors">Features</Link>
+              <Link href="/#how-it-works" className="underline-soft nav-link text-gray-300 hover:text-white transition-colors">
+                How it works
+              </Link>
             )}
-            {isHome ? (
-              <a href="#how-it-works" aria-current={active==="how-it-works"?"page":undefined}
-                 className={`underline-soft nav-link transition-colors ${active==="how-it-works"?"text-white":"text-gray-300 hover:text-white"}`}>How it works</a>
-            ) : (
-              <Link href="/#how-it-works" className="underline-soft nav-link text-gray-300 hover:text-white transition-colors">How it works</Link>
-            )}
-            <Link href="/finance-copilot" className="underline-soft nav-link text-gray-300 hover:text-white transition-colors">Get Strategy</Link>
-        </nav>
-
+            <Link href="/finance-copilot" className="underline-soft nav-link text-gray-300 hover:text-white transition-colors">
+              Get Strategy
+            </Link>
+          </nav>
 
           <button aria-label="Menu" className="lg:hidden text-white ml-auto md:ml-0" onClick={() => setOpen(v => !v)}>
             {open ? <X className="h-6 w-6"/> : <Menu className="h-6 w-6"/>}
@@ -64,17 +75,23 @@ export default function Navbar() {
             className="lg:hidden px-4 md:px-6 pb-6"
           >
             <div className="glass rounded-xl p-4 space-y-3 border border-white/10">
+              {/* Features - always link to /features page */}
+              <Link href="/features" className="block text-gray-200" onClick={() => setOpen(false)}>
+                Features
+              </Link>
+              {/* How it works */}
               {isHome ? (
-                <a href="#features" className="block text-gray-200" onClick={() => setOpen(false)}>Features</a>
+                <a href="#how-it-works" className="block text-gray-200" onClick={() => setOpen(false)}>
+                  How it works
+                </a>
               ) : (
-                <Link href="/features" className="block text-gray-200" onClick={() => setOpen(false)}>Features</Link>
+                <Link href="/#how-it-works" className="block text-gray-200" onClick={() => setOpen(false)}>
+                  How it works
+                </Link>
               )}
-              {isHome ? (
-                <a href="#how-it-works" className="block text-gray-200" onClick={() => setOpen(false)}>How it works</a>
-              ) : (
-                <Link href="/#how-it-works" className="block text-gray-200" onClick={() => setOpen(false)}>How it works</Link>
-              )}
-              <Link href="/finance-copilot" className="block text-gray-200" onClick={() => setOpen(false)}>Get Strategy</Link>
+              <Link href="/finance-copilot" className="block text-gray-200" onClick={() => setOpen(false)}>
+                Get Strategy
+              </Link>
             </div>
           </motion.div>
         )}
@@ -82,5 +99,3 @@ export default function Navbar() {
     </header>
   );
 }
-
-
