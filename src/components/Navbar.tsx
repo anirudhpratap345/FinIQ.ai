@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
+import AuthButton from "@/components/AuthButton";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -60,6 +61,11 @@ export default function Navbar() {
             </Link>
           </nav>
 
+          {/* Auth Button */}
+          <div className="hidden lg:block">
+            <AuthButton />
+          </div>
+
           <button aria-label="Menu" className="lg:hidden text-white ml-auto md:ml-0" onClick={() => setOpen(v => !v)}>
             {open ? <X className="h-6 w-6"/> : <Menu className="h-6 w-6"/>}
           </button>
@@ -93,6 +99,9 @@ export default function Navbar() {
               <Link href="/finance-copilot" className="block text-gray-200" onClick={() => setOpen(false)}>
                 Get Strategy
               </Link>
+              <div className="border-t border-white/10 pt-3">
+                <AuthButton />
+              </div>
             </div>
           </motion.div>
         )}

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 
 from orchestrator import ChainManager
 from utils.cache import get_cache_stats, cache_clear
+from utils.redis_manager import get_metrics_manager
+from middleware.auth import AuthMiddleware, get_user_id
 
 # Setup logging with more detail
 logging.basicConfig(
@@ -36,6 +38,7 @@ origins = [
 	"http://127.0.0.1:3000",
 	"https://fin-iq-ai.vercel.app",
 ]
+# Add CORS middleware
 app.add_middleware(
 	CORSMiddleware,
 	allow_origins=origins,
@@ -43,6 +46,9 @@ app.add_middleware(
 	allow_methods=["*"],
 	allow_headers=["*"],
 )
+
+# Add auth middleware
+app.add_middleware(AuthMiddleware)
 
 # Force in-memory limiter on Render (disable Redis for now)
 # REDIS_URL = os.getenv("REDIS_URL")
@@ -75,6 +81,7 @@ class GenerateResponse(BaseModel):
 	response: Dict[str, Any]
 	tokens_used: int
 	remaining_trials: int
+	user_metrics: Optional[Dict[str, Any]] = None  # User generation count and ratings
 
 # Initialize orchestrator (ensures API key loaded only on startup)
 chain_manager = ChainManager(api_key=os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
@@ -98,8 +105,12 @@ async def startup_event():
 
 
 @app.post("/api/generate", response_model=GenerateResponse)
-async def generate(req: GenerateRequest):
+async def generate(req: GenerateRequest, request: Request):
+	"""Generate funding strategy. Tracks user metrics in Redis."""
 	user_id = req.user_id
+	
+	# Initialize metrics manager
+	metrics_mgr = get_metrics_manager()
 
 	# Check trial limit
 	if use_redis_limiter:
@@ -159,10 +170,17 @@ async def generate(req: GenerateRequest):
 		remaining = max(TRIAL_LIMIT - user_trials[user_id], 0)
 		logger.info(f"[OK] User {user_id} usage updated in-memory. Used: {user_trials[user_id]}, Remaining: {remaining}")
 
+	# Track user metrics: generation count and last active time
+	if metrics_mgr.client:
+		metrics_mgr.increment_generation_count(user_id)
+		metrics_mgr.update_last_active(user_id)
+		logger.info(f"[METRICS] Generation tracked for user {user_id}")
+
 	return GenerateResponse(
 		response=result,
 		tokens_used=tokens_used,
 		remaining_trials=remaining,
+		user_metrics=metrics_mgr.get_user_metrics(user_id) if metrics_mgr else None,
 	)
 
 
@@ -215,6 +233,51 @@ async def clear_cache():
 	except Exception as e:
 		logger.error(f"[ERROR] Failed to clear cache: {e}")
 		raise HTTPException(status_code=500, detail=f"Failed to clear cache: {str(e)}")
+
+
+# Feedback request model
+class FeedbackRequest(BaseModel):
+	user_id: str = Field(..., min_length=1)
+	strategy_id: str = Field(..., min_length=1)
+	rating: int = Field(..., ge=1, le=5)
+
+
+@app.post("/api/feedback")
+async def submit_feedback(req: FeedbackRequest, request: Request):
+	"""Submit user feedback/rating for a strategy."""
+	user_id = req.user_id
+	metrics_mgr = get_metrics_manager()
+	
+	if not metrics_mgr.client:
+		raise HTTPException(status_code=503, detail="Metrics service unavailable")
+	
+	success = metrics_mgr.add_feedback(user_id, req.strategy_id, req.rating)
+	
+	if success:
+		metrics = metrics_mgr.get_user_metrics(user_id)
+		logger.info(f"[FEEDBACK] User {user_id} rated strategy {req.strategy_id}: {req.rating}/5")
+		return {
+			"success": True,
+			"message": "Feedback recorded",
+			"metrics": metrics,
+		}
+	else:
+		logger.error(f"[ERROR] Failed to record feedback for user {user_id}")
+		raise HTTPException(status_code=400, detail="Invalid rating or user ID")
+
+
+@app.get("/api/metrics/{user_id}")
+async def get_metrics(user_id: str, request: Request):
+	"""Get user metrics (generation count, average rating, etc)."""
+	metrics_mgr = get_metrics_manager()
+	
+	if not metrics_mgr.client:
+		raise HTTPException(status_code=503, detail="Metrics service unavailable")
+	
+	metrics = metrics_mgr.get_user_metrics(user_id)
+	logger.info(f"[METRICS] Retrieved metrics for user {user_id}")
+	return metrics
+
 
 @app.get("/")
 async def root():
