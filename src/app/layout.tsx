@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import AuthProvider from "@/components/AuthProvider";
 import Navbar from "@/components/Navbar";
 import SiteFooter from "@/components/SiteFooter";
 import ScrollProgress from "@/components/ScrollProgress";
@@ -56,17 +55,15 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <ScrollProgress />
-          <SkipToContent />
-          <Navbar />
-          <ErrorBoundary>
-            <main id="main">
-              {children}
-            </main>
-          </ErrorBoundary>
-          <SiteFooter />
-        </AuthProvider>
+        <ScrollProgress />
+        <SkipToContent />
+        <Navbar />
+        <ErrorBoundary>
+          <main id="main">
+            {children}
+          </main>
+        </ErrorBoundary>
+        <SiteFooter />
       </body>
     </html>
   );

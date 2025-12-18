@@ -139,15 +139,4 @@ export async function submitFeedback(
   });
 }
 
-/**
- * Get user metrics.
- */
-export async function getUserMetrics(userId: string): Promise<{
-  generation_count: number;
-  average_rating: number;
-  last_active: string | null;
-}> {
-  return apiCall(`/api/metrics/${userId}`, {
-    method: "GET",
-  });
-}
+// (Auth disabled) User-specific metrics removed for now.

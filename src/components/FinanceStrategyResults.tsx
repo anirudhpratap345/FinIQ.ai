@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion';
 import type { FundingStrategy } from '@/types/finance-copilot';
 import { formatCurrency } from '@/lib/validation/finance-inputs';
-import UserMetrics from '@/components/UserMetrics';
 
 interface FinanceStrategyResultsProps {
   strategy: FundingStrategy;
@@ -21,11 +20,6 @@ export default function FinanceStrategyResults({ strategy, userMetrics }: Financ
       transition={{ duration: 0.5 }}
       className="space-y-6"
     >
-      {/* User Metrics Section */}
-      <UserMetrics
-        generationCount={userMetrics?.generation_count}
-        averageRating={userMetrics?.average_rating}
-      />
       {/* Header Summary */}
       <div className="glass-strong rounded-xl p-6 border border-white/10">
         <h2 className="text-2xl font-bold text-white mb-4">
