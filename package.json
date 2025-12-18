@@ -27,8 +27,12 @@
     "framer-motion": "^12.23.12",
     "groq-sdk": "^0.30.0",
     "lucide-react": "^0.542.0",
+<<<<<<< HEAD
     "next": "15.5.2",
     "next-auth": "^5.0.0-beta.20",
+=======
+    "next": "15.5.7",
+>>>>>>> 9f10dbea3c827fbdb68a39f9ea2531dd1cf02212
     "node-fetch": "^3.3.2",
     "openai": "^5.17.0",
     "react": "19.1.0",
@@ -46,7 +50,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.2",
+    "eslint-config-next": "15.5.7",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "tailwindcss": "^4",
