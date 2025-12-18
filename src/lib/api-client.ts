@@ -39,10 +39,14 @@ export async function apiCall<T = any>(
     ...restOptions
   } = options;
 
-  const headers = {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...customHeaders,
   };
+
+  // Merge custom headers
+  if (customHeaders && typeof customHeaders === "object") {
+    Object.assign(headers, customHeaders);
+  }
 
   // Get user_id from session if needed
   if (includeUserId && typeof window !== "undefined") {
