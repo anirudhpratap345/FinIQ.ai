@@ -18,12 +18,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => {
     process.env.AUTH_GOOGLE_ID ||
     process.env.GOOGLE_CLIENT_ID ||
     process.env.AUTH_GOOGLE_CLIENT_ID ||
+    // (common mistakes) if user put these in Vercel by accident
+    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
     "";
 
   const googleClientSecret =
     process.env.AUTH_GOOGLE_SECRET ||
     process.env.GOOGLE_CLIENT_SECRET ||
     process.env.AUTH_GOOGLE_CLIENT_SECRET ||
+    // (common mistakes) if user put these in Vercel by accident
+    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET ||
     "";
 
   const providers =
@@ -36,11 +40,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => {
         ]
       : [];
 
-  if (process.env.NODE_ENV === "production" && providers.length === 0) {
-    // This will show up in Vercel function logs and explains why /api/auth/session 500s.
-    console.error(
-      "[auth] Missing Google OAuth env vars at runtime. Set AUTH_GOOGLE_ID/AUTH_GOOGLE_SECRET (preferred) or GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET."
-    );
+  const resolvedSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+
+  if (process.env.NODE_ENV === "production") {
+    // Safe diagnostics (no secrets) to make Vercel logs actionable.
+    if (!resolvedSecret) {
+      console.error(
+        "[auth] Missing AUTH_SECRET (or NEXTAUTH_SECRET). This will cause /api/auth/session to 500."
+      );
+    }
+    if (providers.length === 0) {
+      console.error("[auth] Missing Google OAuth env vars at runtime.", {
+        has_AUTH_GOOGLE_ID: !!process.env.AUTH_GOOGLE_ID,
+        has_AUTH_GOOGLE_SECRET: !!process.env.AUTH_GOOGLE_SECRET,
+        has_GOOGLE_CLIENT_ID: !!process.env.GOOGLE_CLIENT_ID,
+        has_GOOGLE_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET,
+        has_AUTH_GOOGLE_CLIENT_ID: !!process.env.AUTH_GOOGLE_CLIENT_ID,
+        has_AUTH_GOOGLE_CLIENT_SECRET: !!process.env.AUTH_GOOGLE_CLIENT_SECRET,
+        has_NEXT_PUBLIC_GOOGLE_CLIENT_ID: !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        has_NEXT_PUBLIC_GOOGLE_CLIENT_SECRET: !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET,
+        has_AUTH_URL: !!process.env.AUTH_URL,
+        has_NEXTAUTH_URL: !!process.env.NEXTAUTH_URL,
+        vercel_url: process.env.VERCEL_URL ? "(set)" : "(missing)",
+      });
+    }
   }
 
   return {
@@ -48,7 +71,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => {
     trustHost: true,
 
     // Support both Auth.js v5 env names and older NextAuth v4 env names.
-    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+    secret: resolvedSecret,
 
     providers,
     session: {
