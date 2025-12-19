@@ -47,7 +47,12 @@ export default function Home() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       <AnimatedBackground />
-      <div className="absolute inset-0 bg-[#0d1117] opacity-95" />
+      <div 
+        className="absolute inset-0 opacity-95"
+        style={{
+          background: "linear-gradient(to bottom, #24243e 0%, #302b63 50%, #0f0c29 100%)"
+        }}
+      />
       
       {/* Hero Section */}
       <section className="relative z-10 container mx-auto px-6">
@@ -58,7 +63,7 @@ export default function Home() {
         <div 
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: "radial-gradient(circle at center, rgba(16, 185, 129, 0.1) 0%, transparent 70%)"
+            background: "radial-gradient(circle at center, rgba(36, 36, 62, 0.3) 0%, rgba(48, 43, 99, 0.2) 50%, rgba(15, 12, 41, 0.1) 100%)"
           }}
         />
         
@@ -97,13 +102,11 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-transparent bg-clip-text font-extrabold leading-tight mb-8"
+            className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 font-extrabold leading-tight mb-8"
             style={{
               fontSize: "clamp(3.5rem, 8vw, 7rem)",
               letterSpacing: "-0.02em",
-              textShadow: "0 0 60px rgba(36, 43, 99, 0.4)",
-              backgroundImage:
-                "linear-gradient(to right, #24243e, #302b63, #0f0c29)"
+              textShadow: "0 0 60px rgba(99, 102, 241, 0.4)"
             }}
           >
             VC Partner
@@ -129,13 +132,7 @@ export default function Home() {
           >
             <Link href="/finance-copilot">
               <button
-                className={`group relative px-8 py-4 rounded-full text-white text-lg font-semibold shadow-[0_10px_40px_rgba(36,43,99,0.4)] hover:shadow-[0_15px_50px_rgba(36,43,99,0.6)] transition-all duration-300 transform hover:scale-105 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-zinc-950 w-full md:w-auto ${
-                  !prefersReducedMotion ? "animate-pulse-glow" : ""
-                }`}
-                style={{
-                  backgroundImage:
-                    "linear-gradient(to right, #24243e, #302b63, #0f0c29)",
-                }}
+                className={`group relative px-8 py-4 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 hover:from-blue-400 hover:via-indigo-400 hover:to-purple-400 rounded-full text-white text-lg font-semibold shadow-[0_10px_40px_rgba(99,102,241,0.4)] hover:shadow-[0_15px_50px_rgba(99,102,241,0.6)] transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-zinc-950 w-full md:w-auto ${!prefersReducedMotion ? "animate-pulse-glow" : ""}`}
               >
                 Get My Free Strategy
                 <span className="inline-block ml-2 transition-transform duration-300 group-hover:translate-x-1">
@@ -152,17 +149,15 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.0 }}
-              className="group w-full md:w-[180px] h-28 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col items-center justify-center text-center"
+              className="group w-full md:w-[180px] h-28 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col items-center justify-center text-center"
               style={{
                 transformStyle: "preserve-3d",
-                perspective: "1000px",
-                backgroundImage:
-                  "linear-gradient(to right, #24243e, #302b63, #0f0c29)",
+                perspective: "1000px"
               }}
               onMouseMove={handleCardMouseMove}
               onMouseLeave={handleCardMouseLeave}
             >
-              <div className="font-semibold text-lg text-white">Series A</div>
+              <div className="text-blue-400 font-semibold text-lg">Series A</div>
               <div className="text-zinc-400 text-sm mt-2">Focus Stage</div>
             </motion.div>
 
@@ -171,17 +166,15 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.2 }}
-              className="group hidden md:flex w-[180px] h-28 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col items-center justify-center text-center"
+              className="group hidden md:flex w-[180px] h-28 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col items-center justify-center text-center"
               style={{
                 transformStyle: "preserve-3d",
-                perspective: "1000px",
-                backgroundImage:
-                  "linear-gradient(to right, #24243e, #302b63, #0f0c29)",
+                perspective: "1000px"
               }}
               onMouseMove={handleCardMouseMove}
               onMouseLeave={handleCardMouseLeave}
             >
-              <div className="font-semibold text-lg text-white">$4-6M</div>
+              <div className="text-indigo-400 font-semibold text-lg">$4-6M</div>
               <div className="text-zinc-400 text-sm mt-2">Raise Range</div>
             </motion.div>
 
@@ -190,17 +183,15 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.4 }}
-              className="group hidden md:flex w-[180px] h-28 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col items-center justify-center text-center"
+              className="group hidden md:flex w-[180px] h-28 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col items-center justify-center text-center"
               style={{
                 transformStyle: "preserve-3d",
-                perspective: "1000px",
-                backgroundImage:
-                  "linear-gradient(to right, #24243e, #302b63, #0f0c29)",
+                perspective: "1000px"
               }}
               onMouseMove={handleCardMouseMove}
               onMouseLeave={handleCardMouseLeave}
             >
-              <div className="font-semibold text-lg text-white">Top VCs</div>
+              <div className="text-purple-400 font-semibold text-lg">Top VCs</div>
               <div className="text-zinc-400 text-sm mt-2">Target Tier</div>
             </motion.div>
           </div>
