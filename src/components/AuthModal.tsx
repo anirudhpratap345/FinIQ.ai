@@ -117,27 +117,43 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     signIn("google", { callbackUrl: window.location.href });
   };
 
-  // Close on escape key
+  // Close on escape key and lock body scroll
   useEffect(() => {
+    if (!isOpen) return;
+
+    // Lock body scroll when modal is open
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = "hidden";
+
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
     window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+    return () => {
+      document.body.style.overflow = originalStyle;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen, onClose]);
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      {isOpen && (
+        <motion.div
+          key="auth-modal"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+        >
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           className="fixed inset-0 bg-black/80 backdrop-blur-sm"
           onClick={onClose}
         />
@@ -147,8 +163,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ duration: 0.2 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-md max-h-[90vh] bg-[#111111] border border-white/10 rounded-xl shadow-2xl my-auto flex flex-col"
+          className="relative w-full max-w-md max-h-[90vh] bg-[#111111] border border-white/10 rounded-xl shadow-2xl flex flex-col overflow-hidden"
         >
           {/* Close button */}
           <button
@@ -344,7 +361,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </button>
           </div>
         </motion.div>
-      </div>
+        </motion.div>
+      )}
     </AnimatePresence>
   );
 }
