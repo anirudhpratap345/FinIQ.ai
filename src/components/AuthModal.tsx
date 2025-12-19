@@ -132,13 +132,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm"
           onClick={onClose}
         />
 
@@ -147,19 +147,20 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-md mx-4 bg-[#111111] border border-white/10 rounded-xl shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-md max-h-[90vh] bg-[#111111] border border-white/10 rounded-xl shadow-2xl my-auto flex flex-col"
         >
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-zinc-400 hover:text-white transition"
+            className="absolute top-4 right-4 z-10 text-zinc-400 hover:text-white transition p-1 hover:bg-white/5 rounded"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
           </button>
 
           {/* Tabs */}
-          <div className="flex border-b border-white/10">
+          <div className="flex border-b border-white/10 flex-shrink-0">
             <button
               onClick={() => {
                 setActiveTab("signin");
@@ -189,7 +190,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </div>
 
           {/* Content */}
-          <div className="p-6">
+          <div className="p-6 overflow-y-auto flex-1">
             {error && (
               <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-sm text-red-400">
                 {error}
