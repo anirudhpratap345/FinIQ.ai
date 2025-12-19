@@ -154,82 +154,59 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   return (
     <AnimatePresence mode="wait">
       {isOpen && (
-        <motion.div
-          key="auth-modal-wrapper"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 md:p-6"
-          style={{ 
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            width: '100vw',
-            height: '100vh',
-            overflow: 'auto',
-            WebkitOverflowScrolling: 'touch'
-          }}
-        >
-          {/* Backdrop - covers entire viewport */}
+        <>
+          {/* Backdrop */}
           <motion.div
+            key="auth-modal-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
             onClick={onClose}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[99]"
             style={{
               position: 'fixed',
               top: 0,
               left: 0,
               right: 0,
-              bottom: 0,
-              zIndex: 100,
-              width: '100vw',
-              height: '100vh'
+              bottom: 0
             }}
           />
 
-          {/* Modal - centered and scrollable */}
+          {/* Modal - compact and centered */}
           <motion.div
             key="auth-modal-content"
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ 
+              type: "spring",
+              stiffness: 200,
+              damping: 30
+            }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-md bg-[#111111] border border-white/10 rounded-xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-[100] flex flex-col"
             style={{
-              maxHeight: 'calc(100vh - 1.5rem)',
-              maxWidth: 'calc(100vw - 1.5rem)',
-              minWidth: 'min(100%, 20rem)',
-              zIndex: 101,
-              position: 'relative',
-              margin: 'auto',
-              display: 'flex',
-              flexDirection: 'column'
+              maxHeight: '90vh'
             }}
           >
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 text-zinc-400 hover:text-white transition p-1 hover:bg-white/5 rounded"
+            className="absolute top-3 right-3 z-10 text-zinc-400 hover:text-white transition p-1.5 hover:bg-white/5 rounded-lg"
             aria-label="Close"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
 
           {/* Tabs */}
-          <div className="flex border-b border-white/10 flex-shrink-0 relative">
+          <div className="flex border-b border-zinc-800 flex-shrink-0 relative px-6 pt-4">
             <button
               onClick={() => {
                 setActiveTab("signin");
                 setError(null);
               }}
-              className={`flex-1 py-4 text-sm font-medium transition relative ${
+              className={`flex-1 py-3 text-sm font-medium transition relative ${
                 activeTab === "signin"
                   ? "text-white"
                   : "text-zinc-400 hover:text-white"
@@ -237,7 +214,11 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             >
               Sign In
               {activeTab === "signin" && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-400"></span>
+                <motion.span 
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-400"
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
               )}
             </button>
             <button
@@ -245,7 +226,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 setActiveTab("signup");
                 setError(null);
               }}
-              className={`flex-1 py-4 text-sm font-medium transition relative ${
+              className={`flex-1 py-3 text-sm font-medium transition relative ${
                 activeTab === "signup"
                   ? "text-white"
                   : "text-zinc-400 hover:text-white"
@@ -253,16 +234,19 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             >
               Sign Up
               {activeTab === "signup" && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-400"></span>
+                <motion.span 
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-400"
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
               )}
             </button>
           </div>
 
           {/* Content */}
           <div 
-            className="p-4 sm:p-6 overflow-y-auto flex-1"
+            className="p-6 overflow-y-auto flex-1"
             style={{
-              maxHeight: 'calc(100vh - 8rem)',
               WebkitOverflowScrolling: 'touch'
             }}
           >
@@ -276,25 +260,25 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             {activeTab === "signin" && (
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div>
-                  <label className="block text-sm text-zinc-300 mb-2">Email</label>
+                  <label className="block text-sm text-zinc-400 mb-1.5 font-medium">Email</label>
                   <input
                     type="email"
                     value={signInEmail}
                     onChange={(e) => setSignInEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-2 bg-[#1a1a1a] border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-400/50 transition"
+                    className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition text-sm"
                     placeholder="you@example.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-zinc-300 mb-2">Password</label>
+                  <label className="block text-sm text-zinc-400 mb-1.5 font-medium">Password</label>
                   <input
                     type="password"
                     value={signInPassword}
                     onChange={(e) => setSignInPassword(e.target.value)}
                     required
-                    className="w-full px-4 py-2 bg-[#1a1a1a] border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-400/50 transition"
+                    className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition text-sm"
                     placeholder="••••••••"
                   />
                 </div>
@@ -313,7 +297,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 bg-emerald-400 hover:bg-emerald-300 text-black font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
                 >
                   {loading ? "Signing in..." : "Sign In"}
                 </button>
@@ -324,44 +308,44 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             {activeTab === "signup" && (
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div>
-                  <label className="block text-sm text-zinc-300 mb-2">Name</label>
+                  <label className="block text-sm text-zinc-400 mb-1.5 font-medium">Name</label>
                   <input
                     type="text"
                     value={signUpName}
                     onChange={(e) => setSignUpName(e.target.value)}
                     required
-                    className="w-full px-4 py-2 bg-[#1a1a1a] border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-400/50 transition"
+                    className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition text-sm"
                     placeholder="Your name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-zinc-300 mb-2">Email</label>
+                  <label className="block text-sm text-zinc-400 mb-1.5 font-medium">Email</label>
                   <input
                     type="email"
                     value={signUpEmail}
                     onChange={(e) => setSignUpEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-2 bg-[#1a1a1a] border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-400/50 transition"
+                    className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition text-sm"
                     placeholder="you@example.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-zinc-300 mb-2">Password</label>
+                  <label className="block text-sm text-zinc-400 mb-1.5 font-medium">Password</label>
                   <input
                     type="password"
                     value={signUpPassword}
                     onChange={(e) => setSignUpPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="w-full px-4 py-2 bg-[#1a1a1a] border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-400/50 transition"
+                    className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition text-sm"
                     placeholder="At least 6 characters"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-zinc-300 mb-2">
+                  <label className="block text-sm text-zinc-400 mb-1.5 font-medium">
                     Confirm Password
                   </label>
                   <input
@@ -370,7 +354,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     onChange={(e) => setSignUpConfirmPassword(e.target.value)}
                     required
                     minLength={6}
-                    className="w-full px-4 py-2 bg-[#1a1a1a] border border-white/10 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-400/50 transition"
+                    className="w-full px-3.5 py-2.5 bg-zinc-950 border border-zinc-800 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition text-sm"
                     placeholder="Confirm your password"
                   />
                 </div>
@@ -378,7 +362,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 bg-emerald-400 hover:bg-emerald-300 text-black font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
                 >
                   {loading ? "Creating account..." : "Create Account"}
                 </button>
@@ -386,16 +370,16 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
             )}
 
             {/* Divider */}
-            <div className="my-6 flex items-center">
-              <div className="flex-1 border-t border-white/10"></div>
-              <span className="px-4 text-sm text-zinc-500">or</span>
-              <div className="flex-1 border-t border-white/10"></div>
+            <div className="my-5 flex items-center">
+              <div className="flex-1 border-t border-zinc-800"></div>
+              <span className="px-3 text-xs text-zinc-500 uppercase tracking-wider">or</span>
+              <div className="flex-1 border-t border-zinc-800"></div>
             </div>
 
             {/* Google Sign In */}
             <button
               onClick={handleGoogleSignIn}
-              className="w-full py-2.5 border border-white/10 hover:bg-white/5 rounded-lg text-white font-medium transition flex items-center justify-center gap-2"
+              className="w-full py-2.5 border border-zinc-800 hover:bg-zinc-800/50 rounded-lg text-white font-medium transition flex items-center justify-center gap-2 text-sm"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -418,8 +402,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
               Continue with Google
             </button>
           </div>
-        </motion.div>
-        </motion.div>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
