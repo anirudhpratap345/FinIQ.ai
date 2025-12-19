@@ -223,32 +223,38 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </button>
 
           {/* Tabs */}
-          <div className="flex border-b border-white/10 flex-shrink-0">
+          <div className="flex border-b border-white/10 flex-shrink-0 relative">
             <button
               onClick={() => {
                 setActiveTab("signin");
                 setError(null);
               }}
-              className={`flex-1 py-4 text-sm font-medium transition ${
+              className={`flex-1 py-4 text-sm font-medium transition relative ${
                 activeTab === "signin"
-                  ? "text-white border-b-2 border-emerald-400"
+                  ? "text-white"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
               Sign In
+              {activeTab === "signin" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-400"></span>
+              )}
             </button>
             <button
               onClick={() => {
                 setActiveTab("signup");
                 setError(null);
               }}
-              className={`flex-1 py-4 text-sm font-medium transition ${
+              className={`flex-1 py-4 text-sm font-medium transition relative ${
                 activeTab === "signup"
-                  ? "text-white border-b-2 border-emerald-400"
+                  ? "text-white"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
               Sign Up
+              {activeTab === "signup" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-400"></span>
+              )}
             </button>
           </div>
 
@@ -293,10 +299,10 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   />
                 </div>
 
-                <div className="text-right">
+                <div className="flex justify-end">
                   <button
                     type="button"
-                    className="text-sm text-zinc-400 hover:text-zinc-300 transition cursor-not-allowed"
+                    className="text-sm text-zinc-400 hover:text-zinc-300 transition cursor-not-allowed disabled:opacity-50"
                     disabled
                     title="Coming soon"
                   >
