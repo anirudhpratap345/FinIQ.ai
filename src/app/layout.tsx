@@ -4,8 +4,8 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import AuthProvider from "@/components/AuthProvider";
-import Navbar from "@/components/Navbar";
-import SiteFooter from "@/components/SiteFooter";
+import ConditionalNavbar from "@/components/ConditionalNavbar";
+import ConditionalFooter from "@/components/ConditionalFooter";
 import ScrollProgress from "@/components/ScrollProgress";
 import SkipToContent from "@/components/SkipToContent";
 
@@ -60,13 +60,13 @@ export default function RootLayout({
         <AuthProvider>
           <ScrollProgress />
           <SkipToContent />
-          <Navbar />
+          <ConditionalNavbar />
           <ErrorBoundary>
             <main id="main">
               {children}
             </main>
           </ErrorBoundary>
-          <SiteFooter />
+          <ConditionalFooter />
         </AuthProvider>
         <Analytics />
       </body>

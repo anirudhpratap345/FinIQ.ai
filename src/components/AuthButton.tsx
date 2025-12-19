@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { ChevronDown, User } from "lucide-react";
-import AuthModal from "./AuthModal";
 
 export default function AuthButton() {
+  const router = useRouter();
   const { data: session, status } = useSession();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const isAuthed = status === "authenticated";
 
@@ -88,17 +88,14 @@ export default function AuthButton() {
   }
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => setIsModalOpen(true)}
-        className="px-4 py-2 rounded-lg text-sm font-medium text-black bg-emerald-400 hover:bg-emerald-300 transition"
-        aria-label="Sign in"
-      >
-        Sign in
-      </button>
-      <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-    </>
+    <button
+      type="button"
+      onClick={() => router.push("/login")}
+      className="px-4 py-2 rounded-lg text-sm font-medium text-black bg-emerald-400 hover:bg-emerald-300 transition"
+      aria-label="Sign in"
+    >
+      Sign in
+    </button>
   );
 }
 
