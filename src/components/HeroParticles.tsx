@@ -17,7 +17,7 @@ interface HeroParticlesProps {
 
 export default function HeroParticles({ className = "" }: HeroParticlesProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | null>(null);
   const particlesRef = useRef<Particle[]>([]);
   const mouseRef = useRef({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
