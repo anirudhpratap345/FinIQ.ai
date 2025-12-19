@@ -119,11 +119,23 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   // Close on escape key and lock body scroll
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      // Restore scroll when modal closes
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+      return;
+    }
 
     // Lock body scroll when modal is open
-    const originalStyle = window.getComputedStyle(document.body).overflow;
+    // Preserve scrollbar width to prevent layout shift
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    const originalOverflow = document.body.style.overflow;
+    const originalPaddingRight = document.body.style.paddingRight;
+
     document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -133,40 +145,74 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     window.addEventListener("keydown", handleEscape);
 
     return () => {
-      document.body.style.overflow = originalStyle;
+      document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
       window.removeEventListener("keydown", handleEscape);
     };
   }, [isOpen, onClose]);
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {isOpen && (
         <motion.div
-          key="auth-modal"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-        >
-        {/* Backdrop */}
-        <motion.div
+          key="auth-modal-wrapper"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm"
-          onClick={onClose}
-        />
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 md:p-6"
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            overflow: 'auto',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
+          {/* Backdrop - covers entire viewport */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={onClose}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 100,
+              width: '100vw',
+              height: '100vh'
+            }}
+          />
 
-        {/* Modal */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ duration: 0.2 }}
-          onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-md max-h-[90vh] bg-[#111111] border border-white/10 rounded-xl shadow-2xl flex flex-col overflow-hidden"
-        >
+          {/* Modal - centered and scrollable */}
+          <motion.div
+            key="auth-modal-content"
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.2 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-md bg-[#111111] border border-white/10 rounded-xl shadow-2xl flex flex-col overflow-hidden"
+            style={{
+              maxHeight: 'calc(100vh - 1.5rem)',
+              maxWidth: 'calc(100vw - 1.5rem)',
+              minWidth: 'min(100%, 20rem)',
+              zIndex: 101,
+              position: 'relative',
+              margin: 'auto',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
           {/* Close button */}
           <button
             onClick={onClose}
@@ -207,7 +253,13 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </div>
 
           {/* Content */}
-          <div className="p-6 overflow-y-auto flex-1">
+          <div 
+            className="p-4 sm:p-6 overflow-y-auto flex-1"
+            style={{
+              maxHeight: 'calc(100vh - 8rem)',
+              WebkitOverflowScrolling: 'touch'
+            }}
+          >
             {error && (
               <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-sm text-red-400">
                 {error}
