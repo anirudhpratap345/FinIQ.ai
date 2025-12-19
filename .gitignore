@@ -43,6 +43,9 @@ yarn-error.log*
 # backend cache directory (file-based cache)
 /backend/cache/
 
+# user data (JSON file storage)
+/data/
+
 # vercel
 .vercel
 

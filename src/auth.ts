@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
+import { verifyPassword } from "@/lib/users";
 
 /**
  * NextAuth v5 (App Router) configuration.
@@ -30,15 +32,53 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => {
     process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET ||
     "";
 
-  const providers =
-    googleClientId && googleClientSecret
-      ? [
-          Google({
-            clientId: googleClientId,
-            clientSecret: googleClientSecret,
-          }),
-        ]
-      : [];
+  const providers = [];
+
+  // Credentials provider for email/password
+  providers.push(
+    Credentials({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        try {
+          const user = await verifyPassword(
+            credentials.email as string,
+            credentials.password as string
+          );
+
+          if (!user) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          };
+        } catch (error) {
+          console.error("[auth] Credentials authorize error:", error);
+          return null;
+        }
+      },
+    })
+  );
+
+  // Google provider (if configured)
+  if (googleClientId && googleClientSecret) {
+    providers.push(
+      Google({
+        clientId: googleClientId,
+        clientSecret: googleClientSecret,
+      })
+    );
+  }
 
   const resolvedSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
 
@@ -79,14 +119,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => {
     },
     callbacks: {
       async jwt({ token, user }) {
-        if (user?.email) {
-          token.user_id = `user_${Buffer.from(user.email).toString("base64").substring(0, 20)}`;
+        if (user) {
+          // For credentials provider, user.id is already set
+          // For OAuth providers, generate from email
+          token.user_id = user.id || `user_${Buffer.from(user.email || "").toString("base64").substring(0, 20)}`;
+          token.email = user.email;
+          token.name = user.name;
         }
         return token;
       },
       async session({ session, token }) {
-        if (session.user && token.user_id) {
+        if (session.user) {
           session.user.id = token.user_id as string;
+          if (token.email) {
+            session.user.email = token.email as string;
+          }
+          if (token.name) {
+            session.user.name = token.name as string;
+          }
         }
         return session;
       },

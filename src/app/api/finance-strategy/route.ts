@@ -8,12 +8,30 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getApiBase } from '@/lib/api';
+import { auth } from '@/auth';
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
+  // Check authentication
+  const session = await auth();
+  if (!session || !session.user || !session.user.id) {
+    return NextResponse.json(
+      { error: 'Unauthorized. Please sign in to continue.' },
+      { status: 401 }
+    );
+  }
+
   try {
     const payload = await request.json();
+    
+    // Automatically inject user_id from session if not provided
+    if (!payload.user_id) {
+      payload.user_id = session.user.id;
+    }
 
     const base = getApiBase();
     const backendUrl = `${base}/api/generate`;
