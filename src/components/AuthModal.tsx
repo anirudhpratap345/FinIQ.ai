@@ -141,7 +141,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   return (
     <AnimatePresence>
-      {/* Backdrop with blur */}
+      {/* Backdrop with enhanced blur */}
       <motion.div
         key="backdrop"
         initial={{ opacity: 0 }}
@@ -149,7 +149,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
         onClick={onClose}
-        className="fixed inset-0 bg-black/70 backdrop-blur-md z-[99]"
+        className="fixed inset-0 bg-black/60 backdrop-blur-2xl z-[99]"
       />
 
       {/* Centered Modal Container */}
@@ -161,7 +161,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
           onClick={(e) => e.stopPropagation()}
-          className="pointer-events-auto w-full max-w-[420px] max-h-[90vh] bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl flex flex-col overflow-hidden"
+          className="pointer-events-auto w-full max-w-[420px] max-h-[90vh] bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl flex flex-col"
         >
           {/* Close button */}
           <button
